@@ -21,8 +21,12 @@ function HeroLetter({ progress, index, char }) {
 export default function BrandHero() {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
-  const taglineOpacity = useTransform(scrollYProgress, [0.6, 0.9], [0, 1]);
-  const taglineY = useTransform(scrollYProgress, [0.6, 0.9], [20, 0]);
+  const [showTagline, setShowTagline] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowTagline(true), 1800);
+    return () => clearTimeout(timer);
+  }, []);
 
   const word = 'WEAR OUT';
 
@@ -55,7 +59,12 @@ export default function BrandHero() {
             ))}
           </h1>
 
-          <motion.div style={{ opacity: taglineOpacity, y: taglineY }} className="mt-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={showTagline ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
+            className="mt-6"
+          >
             <p className="text-gold tracking-[0.4em] uppercase text-sm sm:text-base drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">Wear Your Confidence</p>
             <p className="text-black mt-4 max-w-md mx-auto drop-shadow-[0_1px_3px_rgba(255,255,255,0.85)]">
               Premium streetwear built to make a statement. Bold fits, clean lines, unapologetic confidence.

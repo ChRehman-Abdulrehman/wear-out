@@ -12,7 +12,6 @@ export default function Home() {
   const [featuredImages, setFeaturedImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const config = useConfig();
-  const ctaRef = useRef(null);
   const hasScrolled = useRef(false);
 
   useEffect(() => {
@@ -30,18 +29,16 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Auto-scroll to "Start Shopping" on page load
+  // Auto-scroll to hero buttons (Shop Now / Our Story)
   useEffect(() => {
     if (hasScrolled.current) return;
     const timer = setTimeout(() => {
-      const targetEl = ctaRef.current;
-      if (!targetEl) return;
       hasScrolled.current = true;
-      const targetY = targetEl.getBoundingClientRect().top + window.scrollY - 60;
+      const targetY = window.innerHeight * 0.55;
       const startY = window.scrollY;
       const diff = targetY - startY;
       if (diff <= 0) return;
-      const duration = Math.min(Math.max(diff / 800, 1.5), 4);
+      const duration = Math.min(Math.max(diff / 800, 1.2), 2.5);
       const startTime = performance.now();
       function step(now) {
         const elapsed = (now - startTime) / (duration * 1000);
@@ -145,15 +142,6 @@ export default function Home() {
             })}
           </div>
         </div>
-      </section>
-
-      {/* Brand CTA - scroll target */}
-      <section ref={ctaRef} className="max-w-7xl mx-auto px-4 py-20 text-center">
-        <h2 className="font-display text-5xl sm:text-7xl text-metallic tracking-widest leading-none">WEAR OUT</h2>
-        <p className="text-gold tracking-[0.4em] uppercase mt-4 text-sm sm:text-base">Wear Your Confidence</p>
-        <Link to="/shirts" className="btn-gold inline-block mt-8">
-          Start Shopping
-        </Link>
       </section>
     </div>
   );
