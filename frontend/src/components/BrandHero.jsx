@@ -31,9 +31,10 @@ export default function BrandHero() {
       <div className="sticky top-0 h-screen overflow-hidden flex flex-col items-center justify-center text-center px-4">
         <div className="absolute inset-0 z-0">
           <img
-            src="/assets/featured-hero.png"
+            src="/assets/featured-hero.webp"
             alt="Wear Out featured collection"
             className="w-full h-full object-cover object-center"
+            fetchPriority="high"
           />
         </div>
         <div className="absolute inset-0 z-0 bg-mist/10" />

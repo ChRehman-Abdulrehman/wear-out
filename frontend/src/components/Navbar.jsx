@@ -41,7 +41,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gold/30">
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/assets/logo.png" alt="Wear Out" className="h-9 w-auto" />
+          <img src="/assets/logo.webp" alt="Wear Out" className="h-9 w-auto" fetchPriority="high" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">

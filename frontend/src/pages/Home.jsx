@@ -25,7 +25,7 @@ export default function Home() {
           const imgs = getProductImages(prod);
           imgs.forEach((img) => allImages.push({ url: img, product: prod }));
         });
-        setFeaturedImages(allImages.slice(0, 50));
+        setFeaturedImages(allImages.slice(0, 20));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -70,13 +70,14 @@ export default function Home() {
               <Link
                 key={i}
                 to={`/product/${item.product._id}`}
-                className="relative aspect-square overflow-hidden rounded-lg group"
+                className="relative aspect-square overflow-hidden rounded-lg group bg-slate-100"
               >
                 <img
                   src={item.url}
                   alt={item.product.name}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-end">
                   <span className="text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity truncate w-full bg-gradient-to-t from-black/60 to-transparent">
@@ -102,7 +103,17 @@ export default function Home() {
         </div>
 
         {loading ? (
-          <p className="text-slate-400">Loading products…</p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1,2,3,4].map((n) => (
+              <div key={n} className="bg-white border border-gold/20 rounded-xl overflow-hidden animate-pulse">
+                <div className="aspect-[3/4] bg-slate-200" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-slate-200 rounded w-3/4" />
+                  <div className="h-3 bg-slate-200 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : products.length === 0 ? (
           <p className="text-slate-400">No products yet — check back soon.</p>
         ) : (

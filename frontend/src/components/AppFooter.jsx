@@ -11,7 +11,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <img src="/assets/logo.png" alt="Wear Out" className="h-9 w-auto" />
+            <img src="/assets/logo.webp" alt="Wear Out" className="h-9 w-auto" />
           </div>
           <p className="text-slate-500 text-sm">Wear Your Confidence. Premium streetwear, built to stand out.</p>
         </div>
