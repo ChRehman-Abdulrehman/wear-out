@@ -50,9 +50,9 @@ export default function App() {
                 <Route path="/caps" element={<Category />} />
                 <Route path="/unstitch" element={<Category />} />
                 <Route path="/search" element={<Search />} />
-                <Route path="/watches" element={<ComingSoon category="Watches" />} />
-                <Route path="/accessories" element={<ComingSoon category="Accessories" />} />
-                <Route path="/shoes" element={<ComingSoon category="Shoes" />} />
+                <Route path="/watches" element={<Category />} />
+                <Route path="/accessories" element={<Category />} />
+                <Route path="/shoes" element={<Category />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
