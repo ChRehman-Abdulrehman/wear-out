@@ -7,12 +7,24 @@ import StarRating from '../components/StarRating';
 import ProductCarousel from '../components/ProductCarousel';
 import { getProductImages } from '../lib/img';
 
+const SHOE_SIZES = [
+  { us: '8', uk: '7', pk: '41' },
+  { us: '8.5', uk: '7.5', pk: '42' },
+  { us: '9', uk: '8', pk: '42-43' },
+  { us: '9.5', uk: '8.5', pk: '43' },
+  { us: '10', uk: '9', pk: '43-44' },
+  { us: '10.5', uk: '9.5', pk: '44' },
+  { us: '11', uk: '10', pk: '44-45' },
+];
+
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [size, setSize] = useState('');
+  const [qty, setQty] = useState(1);
+  const [shoePhone, setShoePhone] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -30,16 +42,22 @@ export default function ProductDetail() {
   if (!product) return <p className="text-slate-400 p-10">Product not found.</p>;
 
   const images = getProductImages(product);
+  const isShoes = product.category === 'Shoes';
 
   const handleAdd = () => {
     if (!size) return setError('Please select a size.');
-    addItem(product, size, 1);
+    if (isShoes && !/^\+?[0-9]{7,15}$/.test(shoePhone.replace(/\s/g, '')))
+      return setError('Please enter a valid phone number for shoe order.');
+    addItem(product, size, qty, isShoes ? shoePhone : undefined);
     setError('');
+    alert('Added to cart!');
   };
 
   const handleBuyNow = () => {
     if (!size) return setError('Please select a size.');
-    navigate('/checkout', { state: { buyNow: { product, size, quantity: 1 } } });
+    if (isShoes && !/^\+?[0-9]{7,15}$/.test(shoePhone.replace(/\s/g, '')))
+      return setError('Please enter a valid phone number for shoe order.');
+    navigate('/checkout', { state: { buyNow: { product, size, quantity: qty, shoePhone: isShoes ? shoePhone : undefined } } });
   };
 
   return (
@@ -92,6 +110,63 @@ export default function ProductDetail() {
                   {s}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {isShoes && (
+            <div className="mt-4 bg-slate-50 border border-gold/20 rounded-lg p-4">
+              <h4 className="text-sm font-semibold text-slate-700 mb-2 uppercase tracking-wider">Size Conversion</h4>
+              <table className="w-full text-sm text-left">
+                <thead>
+                  <tr className="text-slate-500 border-b border-slate-200">
+                    <th className="py-1.5 pr-4">US Size</th>
+                    <th className="py-1.5 pr-4">UK Size</th>
+                    <th className="py-1.5">PK/EU Size</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SHOE_SIZES.map((row) => (
+                    <tr key={row.us} className={`border-b border-slate-100 ${size === row.us ? 'bg-gold/10 font-semibold' : ''}`}>
+                      <td className="py-1.5 pr-4">{row.us}</td>
+                      <td className="py-1.5 pr-4">{row.uk}</td>
+                      <td className="py-1.5">{row.pk}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {isShoes && (
+            <div className="mt-4">
+              <label className="text-sm text-slate-500 mb-1 block uppercase tracking-wider">Phone Number *</label>
+              <input
+                className="input-field"
+                value={shoePhone}
+                onChange={(e) => setShoePhone(e.target.value)}
+                placeholder="+92..."
+                required
+              />
+              <p className="text-xs text-slate-400 mt-1">Required for shoe orders</p>
+            </div>
+          )}
+
+          <div className="mt-4">
+            <span className="block text-sm text-slate-500 mb-2 uppercase tracking-wider">Quantity</span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                className="h-10 w-10 rounded-md border border-gold/30 text-slate-800 hover:border-gold text-lg font-bold flex items-center justify-center"
+              >
+                −
+              </button>
+              <span className="w-10 text-center text-lg font-semibold text-slate-800">{qty}</span>
+              <button
+                onClick={() => setQty((q) => q + 1)}
+                className="h-10 w-10 rounded-md border border-gold/30 text-slate-800 hover:border-gold text-lg font-bold flex items-center justify-center"
+              >
+                +
+              </button>
             </div>
           </div>
 

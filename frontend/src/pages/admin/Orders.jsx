@@ -18,7 +18,7 @@ export default function Orders() {
   };
 
   const copy = async (o) => {
-    const items = o.items.map((i) => `  - ${i.name} (Size ${i.size} x${i.quantity})`).join('\n');
+    const items = o.items.map((i) => `  - ${i.name} (Size ${i.size} x${i.quantity})${i.shoePhone ? ` [Phone: ${i.shoePhone}]` : ''}`).join('\n');
     const text =
       `WEAR OUT ORDER — ${o.reference}\n` +
       `Name: ${o.customer.fullName}\n` +
@@ -88,7 +88,7 @@ export default function Orders() {
                 <td className="p-3 text-slate-600">{o.customer.gender}</td>
                 <td className="p-3 text-slate-600">
                   {o.items.map((i, idx) => (
-                    <div key={idx}>{i.name} <span className="text-slate-400">({i.size}×{i.quantity})</span></div>
+                    <div key={idx}>{i.name} <span className="text-slate-400">({i.size} x{i.quantity})</span>{i.shoePhone && <span className="text-gold ml-1">☎ {i.shoePhone}</span>}</div>
                   ))}
                 </td>
                 <td className="p-3">

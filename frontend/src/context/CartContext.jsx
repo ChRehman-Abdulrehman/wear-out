@@ -16,7 +16,7 @@ export function CartProvider({ children }) {
     localStorage.setItem('wearout_cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product, size, quantity = 1) => {
+  const addItem = (product, size, quantity = 1, shoePhone) => {
     setItems((prev) => {
       const idx = prev.findIndex((i) => i.product === product._id && i.size === size);
       if (idx > -1) {
@@ -33,6 +33,7 @@ export function CartProvider({ children }) {
           image: product.image,
           size,
           quantity,
+          shoePhone: shoePhone || '',
         },
       ];
     });

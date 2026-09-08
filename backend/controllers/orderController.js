@@ -27,6 +27,7 @@ exports.createOrder = async (req, res) => {
         size: it.size,
         quantity: qty,
         image: product.image,
+        shoePhone: it.shoePhone || '',
       });
       total += product.price * qty;
     }

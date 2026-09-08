@@ -13,7 +13,7 @@ export default function Checkout() {
   const isBuyNow = !!buyNow;
 
   const items = isBuyNow
-    ? [{ ...buyNow.product, product: buyNow.product._id, size: buyNow.size, quantity: buyNow.quantity }]
+    ? [{ ...buyNow.product, product: buyNow.product._id, size: buyNow.size, quantity: buyNow.quantity, shoePhone: buyNow.shoePhone || '' }]
     : cartItems;
 
   const [config, setConfig] = useState({ deliveryCharge: 0 });
@@ -89,6 +89,7 @@ export default function Checkout() {
           product: it.product,
           size: it.size,
           quantity: it.quantity,
+          shoePhone: it.shoePhone || '',
         })),
         deliveryCharge: config.deliveryCharge,
       };
