@@ -3,8 +3,6 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path');
-const fs = require('fs');
 
 const connectDB = require('./config/db');
 const { ensureAdminExists } = require('./controllers/adminController');
@@ -20,11 +18,6 @@ app.use(
   })
 );
 app.use(express.json({ limit: '10mb' }));
-
-// Serve uploaded product images
-const uploadsPath = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
-app.use('/uploads', express.static(path.join(uploadsPath, 'products')));
 
 // Routes
 app.use('/api/products', require('./routes/products'));

@@ -1,10 +1,9 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Suspense, lazy } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
 import Layout from './components/Layout';
 import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import Category from './pages/Category';
-import ComingSoon from './pages/ComingSoon';
 import Search from './pages/Search';
 import ProductDetail from './pages/ProductDetail';
 import Cart from './pages/Cart';
@@ -17,13 +16,6 @@ import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Products from './pages/admin/Products';
 import Orders from './pages/admin/Orders';
-import Customers from './pages/admin/Customers';
-import ReviewsModeration from './pages/admin/ReviewsModeration';
-import Shopkeepers from './pages/admin/Shopkeepers';
-import FeaturedRequests from './pages/admin/FeaturedRequests';
-import CourierHub from './pages/admin/CourierHub';
-import Logistics from './pages/admin/Logistics';
-import Analytics from './pages/admin/Analytics';
 import SellerLogin from './pages/seller/SellerLogin';
 import SellerSignup from './pages/seller/SellerSignup';
 import ShopkeeperLayout from './pages/seller/ShopkeeperLayout';
@@ -34,6 +26,18 @@ import ShopkeeperCustomers from './pages/seller/ShopkeeperCustomers';
 import { CartProvider } from './context/CartContext';
 import { AdminAuthProvider } from './context/AdminAuth';
 import { ConfigProvider } from './context/ConfigContext';
+
+const Customers = lazy(() => import('./pages/admin/Customers'));
+const ReviewsModeration = lazy(() => import('./pages/admin/ReviewsModeration'));
+const Shopkeepers = lazy(() => import('./pages/admin/Shopkeepers'));
+const FeaturedRequests = lazy(() => import('./pages/admin/FeaturedRequests'));
+const CourierHub = lazy(() => import('./pages/admin/CourierHub'));
+const Logistics = lazy(() => import('./pages/admin/Logistics'));
+const Analytics = lazy(() => import('./pages/admin/Analytics'));
+
+function AdminFallback() {
+  return <div className="p-6 text-slate-400">Loading…</div>;
+}
 
 export default function App() {
   return (
@@ -75,13 +79,13 @@ export default function App() {
                   <Route index element={<Dashboard />} />
                   <Route path="products" element={<Products />} />
                   <Route path="orders" element={<Orders />} />
-                  <Route path="customers" element={<Customers />} />
-                  <Route path="reviews" element={<ReviewsModeration />} />
-                  <Route path="shopkeepers" element={<Shopkeepers />} />
-                  <Route path="featured-requests" element={<FeaturedRequests />} />
-                  <Route path="courier" element={<CourierHub />} />
-                  <Route path="logistics" element={<Logistics />} />
-                  <Route path="analytics" element={<Analytics />} />
+                  <Route path="customers" element={<Suspense fallback={<AdminFallback />}><Customers /></Suspense>} />
+                  <Route path="reviews" element={<Suspense fallback={<AdminFallback />}><ReviewsModeration /></Suspense>} />
+                  <Route path="shopkeepers" element={<Suspense fallback={<AdminFallback />}><Shopkeepers /></Suspense>} />
+                  <Route path="featured-requests" element={<Suspense fallback={<AdminFallback />}><FeaturedRequests /></Suspense>} />
+                  <Route path="courier" element={<Suspense fallback={<AdminFallback />}><CourierHub /></Suspense>} />
+                  <Route path="logistics" element={<Suspense fallback={<AdminFallback />}><Logistics /></Suspense>} />
+                  <Route path="analytics" element={<Suspense fallback={<AdminFallback />}><Analytics /></Suspense>} />
                 </Route>
               </Route>
             </Routes>

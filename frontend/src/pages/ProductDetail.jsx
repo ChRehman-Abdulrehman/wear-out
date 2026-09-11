@@ -34,6 +34,31 @@ export default function ProductDetail() {
       .then((p) => {
         setProduct(p);
         setSize(p.sizes?.[0] || '');
+        document.title = `${p.name} — Wear Out`;
+        const meta = document.querySelector('meta[name="description"]');
+        if (meta) meta.content = `${p.name} — Rs ${p.price.toLocaleString()}. ${p.description?.slice(0, 120) || ''}`;
+        let ld = document.getElementById('product-jsonld');
+        if (!ld) {
+          ld = document.createElement('script');
+          ld.id = 'product-jsonld';
+          ld.type = 'application/ld+json';
+          document.head.appendChild(ld);
+        }
+        ld.textContent = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": p.name,
+          "description": p.description,
+          "image": p.image,
+          "brand": { "@type": "Brand", "name": "Wear Out" },
+          "offers": {
+            "@type": "Offer",
+            "priceCurrency": "PKR",
+            "price": p.price,
+            "availability": p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "url": `https://wearout.shop/product/${p._id}`
+          }
+        });
       })
       .finally(() => setLoading(false));
   }, [id]);
