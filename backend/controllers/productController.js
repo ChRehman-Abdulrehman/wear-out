@@ -3,7 +3,7 @@ const { uploadToCloudinary } = require('../middleware/upload');
 
 exports.getProducts = async (req, res) => {
   try {
-    const { category, featured, search, gender } = req.query;
+    const { category, featured, search, gender, page = 1, limit = 50 } = req.query;
     const filter = {};
     if (category) filter.category = category;
     if (featured === 'true') filter.featured = true;
@@ -12,8 +12,12 @@ exports.getProducts = async (req, res) => {
       const re = new RegExp(search.trim(), 'i');
       filter.$or = [{ name: re }, { description: re }, { category: re }];
     }
-    const products = await Product.find(filter).sort({ createdAt: -1 });
-    res.json(products);
+    const skip = (Number(page) - 1) * Number(limit);
+    const [products, total] = await Promise.all([
+      Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Product.countDocuments(filter),
+    ]);
+    res.json({ products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -31,7 +35,7 @@ exports.getProduct = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, price, sizes, category, inStock, featured, rating, gender } = req.body;
+    const { name, description, price, sizes, category, inStock, stock, featured, rating, gender } = req.body;
     let parsedSizes = sizes;
     if (typeof sizes === 'string') {
       parsedSizes = sizes.split(',').map((s) => s.trim()).filter(Boolean);
@@ -49,6 +53,8 @@ exports.createProduct = async (req, res) => {
       images = [imageUrl];
     }
 
+    const stockNum = stock !== undefined ? Number(stock) : 0;
+
     const product = new Product({
       name,
       description,
@@ -57,7 +63,8 @@ exports.createProduct = async (req, res) => {
       category,
       image: imageUrl,
       images,
-      inStock: inStock === 'false' || inStock === false ? false : true,
+      inStock: stockNum > 0 ? true : (inStock === 'false' || inStock === false ? false : true),
+      stock: stockNum,
       featured: featured === 'true' || featured === true,
       rating: rating !== undefined ? Number(rating) : 0,
       gender: gender || 'Unisex',
@@ -73,19 +80,23 @@ exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    const { name, description, price, sizes, category, inStock, featured, rating, gender } = req.body;
+    const { name, description, price, sizes, category, inStock, stock, featured, rating, gender } = req.body;
     if (name !== undefined) product.name = name;
     if (description !== undefined) product.description = description;
     if (price !== undefined) product.price = Number(price);
     if (category !== undefined) product.category = category;
     if (rating !== undefined) product.rating = Number(rating);
     if (gender !== undefined) product.gender = gender;
+    if (stock !== undefined) {
+      product.stock = Number(stock);
+      product.inStock = product.stock > 0;
+    }
     if (sizes !== undefined) {
       let parsed = sizes;
       if (typeof sizes === 'string') parsed = sizes.split(',').map((s) => s.trim()).filter(Boolean);
       if (parsed.length) product.sizes = parsed;
     }
-    if (inStock !== undefined) product.inStock = inStock === 'false' || inStock === false ? false : true;
+    if (inStock !== undefined && stock === undefined) product.inStock = inStock === 'false' || inStock === false ? false : true;
     if (featured !== undefined) product.featured = featured === 'true' || featured === true;
     if (req.files && req.files.length > 0) {
       const uploads = await Promise.all(req.files.map((f) => uploadToCloudinary(f)));

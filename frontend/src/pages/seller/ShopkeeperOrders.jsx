@@ -10,7 +10,7 @@ export default function ShopkeeperOrders() {
 
   const load = () => {
     setLoading(true);
-    api.sellerGetOrders(token).then(setOrders).finally(() => setLoading(false));
+    api.sellerGetOrders(token).then((r) => setOrders(r.orders || r)).finally(() => setLoading(false));
   };
   useEffect(() => { load(); }, []);
 

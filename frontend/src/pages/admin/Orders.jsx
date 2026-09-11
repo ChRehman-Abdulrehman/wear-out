@@ -9,7 +9,7 @@ export default function Orders() {
   const [year, setYear] = useState(new Date().getFullYear());
   const [copied, setCopied] = useState('');
 
-  const load = () => api.getOrders({ month, year }).then(setOrders);
+  const load = () => api.getOrders({ month, year }).then((r) => setOrders(r.orders || r));
   useEffect(() => { load(); }, [month, year]);
 
   const updateStatus = async (id, status, courier) => {

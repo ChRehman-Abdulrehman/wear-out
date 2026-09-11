@@ -18,7 +18,7 @@ export default function Search() {
     setLoading(true);
     api
       .getProducts({ search: q.trim() })
-      .then(setProducts)
+      .then((r) => setProducts(r.products || r))
       .finally(() => setLoading(false));
   }, [q]);
 

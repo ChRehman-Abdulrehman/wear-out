@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../api';
 import { imgUrl, getProductImages } from '../../lib/img';
 
-const EMPTY = { name: '', description: '', price: '', category: 'Shirts', sizes: 'S,M,L,XL', gender: 'Unisex', inStock: true, images: null };
+const EMPTY = { name: '', description: '', price: '', category: 'Shirts', sizes: 'S,M,L,XL', gender: 'Unisex', inStock: true, stock: 0, images: null };
 
 export default function ShopkeeperProducts() {
   const [products, setProducts] = useState([]);
@@ -11,13 +11,13 @@ export default function ShopkeeperProducts() {
   const [msg, setMsg] = useState('');
   const token = localStorage.getItem('wearout_seller_token');
 
-  const load = () => api.sellerGetProducts(token).then(setProducts).catch(() => {});
+  const load = () => api.sellerGetProducts(token).then((r) => setProducts(r.products || r)).catch(() => {});
   useEffect(() => { load(); }, []);
 
   const openAdd = () => { setEditing(null); setForm(EMPTY); };
   const openEdit = (p) => {
     setEditing(p._id);
-    setForm({ name: p.name, description: p.description, price: p.price, category: p.category, sizes: p.sizes.join(','), gender: p.gender || 'Unisex', inStock: p.inStock, images: null });
+    setForm({ name: p.name, description: p.description, price: p.price, category: p.category, sizes: p.sizes.join(','), gender: p.gender || 'Unisex', inStock: p.inStock, stock: p.stock || 0, images: null });
   };
 
   const submit = async (e) => {
@@ -30,6 +30,7 @@ export default function ShopkeeperProducts() {
     fd.append('sizes', form.sizes);
     fd.append('gender', form.gender);
     fd.append('inStock', form.inStock);
+    fd.append('stock', form.stock);
     if (form.images) {
       for (let i = 0; i < form.images.length; i++) {
         fd.append('images', form.images[i]);
@@ -89,6 +90,10 @@ export default function ShopkeeperProducts() {
             <input type="file" accept="image/*" multiple className="w-full text-sm border border-slate-200 rounded-md p-2" onChange={(e) => setForm({ ...form, images: e.target.files })} />
             {form.images && <p className="text-xs text-slate-400 mt-1">{form.images.length} file(s) selected</p>}
           </div>
+          <label className="text-sm text-slate-600">
+            <span className="mb-1 block">Stock count (0 = out of stock)</span>
+            <input type="number" min="0" className="input-field w-full" value={form.stock} onChange={(e) => { const v = Number(e.target.value); setForm({ ...form, stock: v, inStock: v > 0 }); }} />
+          </label>
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <input type="checkbox" checked={form.inStock} onChange={(e) => setForm({ ...form, inStock: e.target.checked })} /> In Stock
           </label>

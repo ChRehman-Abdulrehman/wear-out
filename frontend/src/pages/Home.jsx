@@ -17,7 +17,8 @@ export default function Home() {
   useEffect(() => {
     api
       .getProducts({ featured: 'true' })
-      .then((p) => {
+      .then((res) => {
+        const p = res.products || res;
         setProducts(p.slice(0, 8));
         const allImages = [];
         p.forEach((prod) => {

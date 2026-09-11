@@ -3,6 +3,15 @@ const Product = require('../models/Product');
 
 const buildReference = () => 'WO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
 
+async function generateUniqueReference(maxRetries = 5) {
+  for (let i = 0; i < maxRetries; i++) {
+    const ref = buildReference();
+    const exists = await Order.findOne({ reference: ref });
+    if (!exists) return ref;
+  }
+  return buildReference() + '-' + Date.now().toString(36).slice(-3).toUpperCase();
+}
+
 exports.createOrder = async (req, res) => {
   try {
     const { customer, items, deliveryCharge } = req.body;
@@ -10,7 +19,7 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: 'Customer and at least one item are required' });
     }
 
-    // Resolve product snapshots + validate stock/size
+    // Resolve product snapshots + validate stock/size + decrement stock
     const resolvedItems = [];
     let total = 0;
     for (const it of items) {
@@ -20,6 +29,9 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: `Size ${it.size} not available for ${product.name}` });
       }
       const qty = Math.max(1, parseInt(it.quantity, 10) || 1);
+      if (product.stock > 0 && product.stock < qty) {
+        return res.status(400).json({ message: `Only ${product.stock} left in stock for ${product.name}` });
+      }
       resolvedItems.push({
         product: product._id,
         name: product.name,
@@ -32,7 +44,18 @@ exports.createOrder = async (req, res) => {
       total += product.price * qty;
     }
 
+    // Decrement stock after validation passes
+    for (const it of resolvedItems) {
+      const product = await Product.findById(it.product);
+      if (product && product.stock > 0) {
+        product.stock = Math.max(0, product.stock - it.quantity);
+        product.inStock = product.stock > 0;
+        await product.save();
+      }
+    }
+
     const delivery = Number(deliveryCharge) || 0;
+    const reference = await generateUniqueReference();
     const order = new Order({
       customer: {
         fullName: customer.fullName,
@@ -47,7 +70,7 @@ exports.createOrder = async (req, res) => {
       totalAmount: total,
       deliveryCharge: delivery,
       status: 'Order Placed',
-      reference: buildReference(),
+      reference,
     });
     await order.save();
     res.status(201).json({ message: 'Order placed successfully', order });
@@ -58,7 +81,7 @@ exports.createOrder = async (req, res) => {
 
 exports.getOrders = async (req, res) => {
   try {
-    const { month, year, status } = req.query;
+    const { month, year, status, page = 1, limit = 50 } = req.query;
     const filter = {};
     if (status) filter.status = status;
     if (month && year) {
@@ -68,8 +91,12 @@ exports.getOrders = async (req, res) => {
       const end = new Date(y, m + 1, 1);
       filter.createdAt = { $gte: start, $lt: end };
     }
-    const orders = await Order.find(filter).sort({ createdAt: -1 });
-    res.json(orders);
+    const skip = (Number(page) - 1) * Number(limit);
+    const [orders, total] = await Promise.all([
+      Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Order.countDocuments(filter),
+    ]);
+    res.json({ orders, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

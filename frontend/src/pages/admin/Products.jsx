@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../api';
 import { imgUrl } from '../../lib/img';
 
-const EMPTY = { name: '', description: '', price: '', category: 'Shirts', sizes: 'S,M,L,XL', inStock: true, featured: false, rating: 0, gender: 'Unisex', images: null };
+const EMPTY = { name: '', description: '', price: '', category: 'Shirts', sizes: 'S,M,L,XL', inStock: true, stock: 0, featured: false, rating: 0, gender: 'Unisex', images: null };
 
 function StarInput({ value, onChange }) {
   const [hover, setHover] = useState(0);
@@ -32,7 +32,7 @@ export default function Products() {
   const [form, setForm] = useState(EMPTY);
   const [msg, setMsg] = useState('');
 
-  const load = () => api.getProducts().then(setProducts);
+  const load = () => api.getProducts().then((r) => setProducts(r.products || r));
   useEffect(() => { load(); }, []);
 
   const openAdd = () => { setEditing(null); setForm(EMPTY); };
@@ -40,7 +40,7 @@ export default function Products() {
     setEditing(p._id);
     setForm({
       name: p.name, description: p.description, price: p.price, category: p.category,
-      sizes: p.sizes.join(','), inStock: p.inStock, featured: p.featured, rating: p.rating || 0, gender: p.gender || 'Unisex', images: null,
+      sizes: p.sizes.join(','), inStock: p.inStock, stock: p.stock || 0, featured: p.featured, rating: p.rating || 0, gender: p.gender || 'Unisex', images: null,
     });
   };
 
@@ -53,6 +53,7 @@ export default function Products() {
     fd.append('category', form.category);
     fd.append('sizes', form.sizes);
     fd.append('inStock', form.inStock);
+    fd.append('stock', form.stock);
     fd.append('featured', form.featured);
     fd.append('rating', form.rating);
     fd.append('gender', form.gender);
@@ -113,6 +114,10 @@ export default function Products() {
             <input type="file" accept="image/*" multiple className="w-full text-sm border border-slate-200 rounded-md p-2" onChange={(e) => setForm({ ...form, images: e.target.files })} />
             {form.images && <p className="text-xs text-slate-400 mt-1">{form.images.length} file(s) selected</p>}
           </div>
+          <label className="text-sm text-slate-600">
+            <span className="mb-1 block">Stock count (0 = out of stock)</span>
+            <input type="number" min="0" className="input-field" value={form.stock} onChange={(e) => { const v = Number(e.target.value); setForm({ ...form, stock: v, inStock: v > 0 }); }} />
+          </label>
           <label className="flex items-center gap-2 text-sm text-slate-600">
             <input type="checkbox" checked={form.inStock} onChange={(e) => setForm({ ...form, inStock: e.target.checked })} /> In Stock
           </label>

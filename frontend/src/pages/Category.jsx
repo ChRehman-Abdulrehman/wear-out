@@ -21,7 +21,7 @@ export default function Category() {
     if (gender) params.gender = gender;
     api
       .getProducts(params)
-      .then(setProducts)
+      .then((r) => setProducts(r.products || r))
       .finally(() => setLoading(false));
   }, [value, gender]);
 

@@ -20,6 +20,7 @@ const productSchema = new mongoose.Schema(
     image: { type: String, default: '' },
     images: { type: [String], default: [] },
     inStock: { type: Boolean, default: true },
+    stock: { type: Number, default: 0, min: 0 },
     featured: { type: Boolean, default: false },
     featuredPending: { type: Boolean, default: false },
     shopkeeper: { type: mongoose.Schema.Types.ObjectId, ref: 'Shopkeeper', default: null },
