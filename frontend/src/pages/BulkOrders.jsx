@@ -1,4 +1,5 @@
 import { useConfig } from '../context/ConfigContext';
+import SEO from '../components/SEO';
 
 export default function BulkOrders() {
   const config = useConfig();
@@ -6,6 +7,12 @@ export default function BulkOrders() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
+      <SEO
+        title="Bulk Orders & Wholesale — Wear Out Pakistan"
+        description="Order Wear Out streetwear in bulk. Special wholesale pricing for shopkeepers, resellers & businesses in Pakistan. Contact us for bulk deals."
+        keywords="bulk order Pakistan, wholesale streetwear Pakistan, Wear Out wholesale, reseller Pakistan, shopkeeper bulk order, wholesale clothing Pakistan, buy in bulk Pakistan"
+        url="/bulk-orders"
+      />
       <h1 className="font-display text-4xl sm:text-5xl text-metallic tracking-wider mb-6 uppercase text-center">
         Bulk Orders &amp; Resellers
       </h1>

@@ -1,8 +1,15 @@
 import WoLogo from '../components/WoLogo';
+import SEO from '../components/SEO';
 
 export default function About() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
+      <SEO
+        title="About Us — Wear Out Streetwear Pakistan"
+        description="Learn about Wear Out — Pakistan's boldest streetwear brand. Born from the streets, forged in bold metallic tones. Premium shirts, trousers, shoes & more with cash on delivery."
+        keywords="about Wear Out, streetwear brand Pakistan, Wear Out story, Pakistani streetwear, premium clothing brand Pakistan, bold fashion Pakistan"
+        url="/about"
+      />
       <div className="text-center mb-12">
         <WoLogo mode="hero" size={90} className="mx-auto mb-4" />
         <h1 className="font-display text-4xl sm:text-6xl text-metallic tracking-widest">WEAR OUT</h1>

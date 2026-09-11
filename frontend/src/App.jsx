@@ -12,6 +12,7 @@ import Checkout from './pages/Checkout';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import BulkOrders from './pages/BulkOrders';
+import NotFound from './pages/NotFound';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
@@ -89,6 +90,7 @@ export default function App() {
                   <Route path="analytics" element={<Suspense fallback={<AdminFallback />}><Analytics /></Suspense>} />
                 </Route>
               </Route>
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </CartProvider>
         </AdminAuthProvider>

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import BrandHero from '../components/BrandHero';
+import SEO from '../components/SEO';
 import api from '../api';
 import { useConfig } from '../context/ConfigContext';
 import { CATEGORIES } from '../categories';
@@ -57,6 +58,29 @@ export default function Home() {
 
   return (
     <div>
+      <SEO
+        title="Premium Streetwear Pakistan"
+        description="Wear Out — Pakistan's boldest streetwear brand. Shop premium shirts, trousers, caps, shoes & unstitched fabric. Cash on delivery. Bold fits, clean lines, unapologetic confidence."
+        keywords="streetwear Pakistan, premium clothing Pakistan, buy shirts online Pakistan, trousers Pakistan, caps Pakistan, shoes Pakistan, unstitched fabric Pakistan, COD Pakistan, bold fashion Pakistan, urban clothing Pakistan"
+        url="/"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: 'Wear Out — Premium Streetwear Pakistan',
+          description: "Pakistan's boldest streetwear brand. Shop premium shirts, trousers, caps, shoes & unstitched fabric.",
+          url: 'https://wearout.shop',
+          mainEntity: {
+            '@type': 'ItemList',
+            name: 'Featured Products',
+            itemListElement: products.slice(0, 8).map((p, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              url: `https://wearout.shop/product/${p._id}`,
+              name: p.name,
+            })),
+          },
+        }}
+      />
       <BrandHero />
 
       {/* Featured 50 images grid */}

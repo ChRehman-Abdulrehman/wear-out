@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import ReviewSection from '../components/ReviewSection';
 import StarRating from '../components/StarRating';
 import ProductCarousel from '../components/ProductCarousel';
+import SEO from '../components/SEO';
 import { getProductImages } from '../lib/img';
 
 const SHOE_SIZES = [
@@ -34,31 +35,6 @@ export default function ProductDetail() {
       .then((p) => {
         setProduct(p);
         setSize(p.sizes?.[0] || '');
-        document.title = `${p.name} — Wear Out`;
-        const meta = document.querySelector('meta[name="description"]');
-        if (meta) meta.content = `${p.name} — Rs ${p.price.toLocaleString()}. ${p.description?.slice(0, 120) || ''}`;
-        let ld = document.getElementById('product-jsonld');
-        if (!ld) {
-          ld = document.createElement('script');
-          ld.id = 'product-jsonld';
-          ld.type = 'application/ld+json';
-          document.head.appendChild(ld);
-        }
-        ld.textContent = JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": p.name,
-          "description": p.description,
-          "image": p.image,
-          "brand": { "@type": "Brand", "name": "Wear Out" },
-          "offers": {
-            "@type": "Offer",
-            "priceCurrency": "PKR",
-            "price": p.price,
-            "availability": p.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
-            "url": `https://wearout.shop/product/${p._id}`
-          }
-        });
       })
       .finally(() => setLoading(false));
   }, [id]);
@@ -87,6 +63,29 @@ export default function ProductDetail() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
+      <SEO
+        title={`${product.name} — Rs ${product.price.toLocaleString()}`}
+        description={`${product.name} — Rs ${product.price.toLocaleString()}. ${product.description?.slice(0, 140) || 'Shop premium ' + product.category + ' from Wear Out Pakistan.'} Cash on delivery available.`}
+        keywords={`${product.name}, buy ${product.name} Pakistan, ${product.category} Pakistan, Wear Out ${product.category}, streetwear ${product.category}, premium ${product.category} Pakistan, Rs ${product.price.toLocaleString()}`}
+        image={product.image}
+        url={`/product/${product._id}`}
+        type="product"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: product.name,
+          description: product.description,
+          image: product.image,
+          brand: { '@type': 'Brand', name: 'Wear Out' },
+          offers: {
+            '@type': 'Offer',
+            priceCurrency: 'PKR',
+            price: product.price,
+            availability: product.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+            url: `https://wearout.shop/product/${product._id}`,
+          },
+        }}
+      />
       <div className="grid md:grid-cols-2 gap-10">
         <div className="bg-slate-100 rounded-xl overflow-hidden border border-gold/20">
           <ProductCarousel images={images} alt={product.name} className="w-full aspect-[3/4]" />

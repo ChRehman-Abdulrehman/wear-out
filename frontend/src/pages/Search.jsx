@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import SEO from '../components/SEO';
 import api from '../api';
 
 export default function Search() {
@@ -31,6 +32,11 @@ export default function Search() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
+      <SEO
+        title={q ? `Search "${q}"` : 'Search'}
+        description={q ? `Search results for "${q}" on Wear Out. Shop premium streetwear in Pakistan.` : 'Search Wear Out — premium streetwear in Pakistan.'}
+        url={`/search?q=${encodeURIComponent(q)}`}
+      />
       <form
         onSubmit={(e) => e.preventDefault()}
         className="mb-8 flex items-center gap-2 max-w-xl"

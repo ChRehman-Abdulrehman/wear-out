@@ -1,4 +1,5 @@
 import { useConfig } from '../context/ConfigContext';
+import SEO from '../components/SEO';
 
 export default function Contact() {
   const config = useConfig();
@@ -33,6 +34,12 @@ export default function Contact() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
+      <SEO
+        title="Contact Us — Get in Touch"
+        description="Contact Wear Out — Pakistan's boldest streetwear brand. WhatsApp, email, Facebook & community. Fast response, cash on delivery support."
+        keywords="contact Wear Out, Wear Out WhatsApp, streetwear Pakistan contact, Wear Out customer support, order help Pakistan"
+        url="/contact"
+      />
       <h1 className="font-display text-4xl sm:text-6xl text-metallic tracking-widest">CONTACT</h1>
       <p className="text-slate-500 mt-3 mb-10">We'd love to hear from you. Reach out through any channel below.</p>
       <div className="grid sm:grid-cols-2 gap-4">
