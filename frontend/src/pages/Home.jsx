@@ -6,11 +6,9 @@ import SEO from '../components/SEO';
 import api from '../api';
 import { useConfig } from '../context/ConfigContext';
 import { CATEGORIES } from '../categories';
-import { getProductImages } from '../lib/img';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
-  const [featuredImages, setFeaturedImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const config = useConfig();
   const hasScrolled = useRef(false);
@@ -20,18 +18,11 @@ export default function Home() {
       .getProducts({ featured: 'true' })
       .then((res) => {
         const p = res.products || res;
-        setProducts(p.slice(0, 8));
-        const allImages = [];
-        p.forEach((prod) => {
-          const imgs = getProductImages(prod);
-          imgs.forEach((img) => allImages.push({ url: img, product: prod }));
-        });
-        setFeaturedImages(allImages.slice(0, 20));
+        setProducts(p.slice(0, 20));
       })
       .finally(() => setLoading(false));
   }, []);
 
-  // Auto-scroll to hero buttons (Shop Now / Our Story)
   useEffect(() => {
     if (hasScrolled.current) return;
     const timer = setTimeout(() => {
@@ -72,7 +63,7 @@ export default function Home() {
           mainEntity: {
             '@type': 'ItemList',
             name: 'Featured Products',
-            itemListElement: products.slice(0, 8).map((p, i) => ({
+            itemListElement: products.slice(0, 20).map((p, i) => ({
               '@type': 'ListItem',
               position: i + 1,
               url: `https://wearout.shop/product/${p._id}`,
@@ -83,40 +74,11 @@ export default function Home() {
       />
       <BrandHero />
 
-      {/* Featured 50 images grid */}
-      {featuredImages.length > 0 && (
-        <section className="max-w-7xl mx-auto px-4 py-12">
-          <h2 className="font-display text-3xl sm:text-4xl text-metallic tracking-wider mb-6 text-center">FEATURED COLLECTION</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-            {featuredImages.map((item, i) => (
-              <Link
-                key={i}
-                to={`/product/${item.product._id}`}
-                className="relative aspect-square overflow-hidden rounded-lg group bg-slate-100"
-              >
-                <img
-                  src={item.url}
-                  alt={item.product.name}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                  decoding="async"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-end">
-                  <span className="text-white text-xs p-2 opacity-0 group-hover:opacity-100 transition-opacity truncate w-full bg-gradient-to-t from-black/60 to-transparent">
-                    {item.product.name} — Rs {item.product.price.toLocaleString()}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* Featured products */}
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="font-display text-4xl sm:text-5xl text-metallic tracking-wider">DROP 001</h2>
+            <h2 className="font-display text-4xl sm:text-5xl text-metallic tracking-wider">FEATURED COLLECTION</h2>
             <p className="text-slate-500 mt-1">Fresh fits. Wear your confidence.</p>
           </div>
           <Link to="/shirts" className="text-gold text-sm uppercase tracking-widest hover:underline">

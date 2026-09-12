@@ -15,7 +15,7 @@ const orderItemSchema = new mongoose.Schema({
   size: { type: String, required: true },
   quantity: { type: Number, required: true, min: 1 },
   image: { type: String, default: '' },
-  shoePhone: { type: String, default: '' },
+  shoeSize: { type: String, default: '' },
 });
 
 const orderSchema = new mongoose.Schema(

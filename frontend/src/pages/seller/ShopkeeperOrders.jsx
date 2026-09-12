@@ -21,8 +21,8 @@ export default function ShopkeeperOrders() {
 
   const copyCustomer = (o) => {
     const c = o.customer || {};
-    const shoePhones = o.items?.filter((it) => it.shoePhone).map((it) => it.shoePhone).join(', ');
-    const text = `Name: ${c.fullName || ''}\nPhone: ${c.whatsapp || ''}\nEmail: ${c.email || ''}\nCity: ${c.city || ''}\nAddress: ${c.address || ''}${shoePhones ? `\nShoe Phone: ${shoePhones}` : ''}`;
+    const shoeSizes = o.items?.filter((it) => it.shoeSize).map((it) => `US ${it.shoeSize}`).join(', ');
+    const text = `Name: ${c.fullName || ''}\nPhone: ${c.whatsapp || ''}\nEmail: ${c.email || ''}\nCity: ${c.city || ''}\nAddress: ${c.address || ''}${shoeSizes ? `\nFoot Size: ${shoeSizes}` : ''}`;
     navigator.clipboard.writeText(text).then(() => alert('Customer data copied!'));
   };
 
@@ -87,7 +87,7 @@ export default function ShopkeeperOrders() {
             </div>
             <div className="text-xs text-slate-600">
               {o.items?.map((it, i) => (
-                <p key={i}>{it.name} — {it.size} x {it.quantity}{it.shoePhone && <span className="text-gold ml-1">☎ {it.shoePhone}</span>}</p>
+                <p key={i}>{it.name} — {it.size} x {it.quantity}{it.shoeSize && <span className="text-gold ml-1">Foot: US {it.shoeSize}</span>}</p>
               ))}
             </div>
             <div className="flex items-center gap-2">

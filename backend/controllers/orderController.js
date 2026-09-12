@@ -59,7 +59,7 @@ exports.createOrder = async (req, res) => {
         size: it.size,
         quantity: qty,
         image: product.image,
-        shoePhone: it.shoePhone || '',
+        shoeSize: it.shoeSize || '',
       });
       total += product.price * qty;
     }

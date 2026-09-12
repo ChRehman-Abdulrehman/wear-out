@@ -8,7 +8,7 @@ import ProductCarousel from '../components/ProductCarousel';
 import SEO from '../components/SEO';
 import { getProductImages } from '../lib/img';
 
-const SHOE_SIZES = [
+const SHOE_SIZE_TABLE = [
   { us: '8', uk: '7', pk: '41' },
   { us: '8.5', uk: '7.5', pk: '42' },
   { us: '9', uk: '8', pk: '42-43' },
@@ -16,6 +16,7 @@ const SHOE_SIZES = [
   { us: '10', uk: '9', pk: '43-44' },
   { us: '10.5', uk: '9.5', pk: '44' },
   { us: '11', uk: '10', pk: '44-45' },
+  { us: '12', uk: '11', pk: '46' },
 ];
 
 export default function ProductDetail() {
@@ -25,7 +26,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [size, setSize] = useState('');
   const [qty, setQty] = useState(1);
-  const [shoePhone, setShoePhone] = useState('');
+  const [shoeSize, setShoeSize] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -45,20 +46,20 @@ export default function ProductDetail() {
   const images = getProductImages(product);
   const isShoes = product.category === 'Shoes';
 
+  const SHOE_SIZES = ['8', '9', '10', '11', '12'];
+
   const handleAdd = () => {
     if (!size) return setError('Please select a size.');
-    if (isShoes && !/^\+?[0-9]{7,15}$/.test(shoePhone.replace(/\s/g, '')))
-      return setError('Please enter a valid phone number for shoe order.');
-    addItem(product, size, qty, isShoes ? shoePhone : undefined);
+    if (isShoes && !shoeSize) return setError('Please select your foot size (8-12).');
+    addItem(product, size, qty, isShoes ? shoeSize : undefined);
     setError('');
     alert('Added to cart!');
   };
 
   const handleBuyNow = () => {
     if (!size) return setError('Please select a size.');
-    if (isShoes && !/^\+?[0-9]{7,15}$/.test(shoePhone.replace(/\s/g, '')))
-      return setError('Please enter a valid phone number for shoe order.');
-    navigate('/checkout', { state: { buyNow: { product, size, quantity: qty, shoePhone: isShoes ? shoePhone : undefined } } });
+    if (isShoes && !shoeSize) return setError('Please select your foot size (8-12).');
+    navigate('/checkout', { state: { buyNow: { product, size, quantity: qty, shoeSize: isShoes ? shoeSize : undefined } } });
   };
 
   return (
@@ -149,7 +150,7 @@ export default function ProductDetail() {
                   </tr>
                 </thead>
                 <tbody>
-                  {SHOE_SIZES.map((row) => (
+                  {SHOE_SIZE_TABLE.map((row) => (
                     <tr key={row.us} className={`border-b border-slate-100 ${size === row.us ? 'bg-gold/10 font-semibold' : ''}`}>
                       <td className="py-1.5 pr-4">{row.us}</td>
                       <td className="py-1.5 pr-4">{row.uk}</td>
@@ -163,15 +164,18 @@ export default function ProductDetail() {
 
           {isShoes && (
             <div className="mt-4">
-              <label className="text-sm text-slate-500 mb-1 block uppercase tracking-wider">Phone Number *</label>
-              <input
+              <label className="text-sm text-slate-500 mb-1 block uppercase tracking-wider">Foot Size *</label>
+              <select
                 className="input-field"
-                value={shoePhone}
-                onChange={(e) => setShoePhone(e.target.value.replace(/[^0-9+]/g, ''))}
-                onKeyDown={(e) => { if (/[a-zA-Z!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key)) e.preventDefault(); }}
-                placeholder="+923001234567"
+                value={shoeSize}
+                onChange={(e) => setShoeSize(e.target.value)}
                 required
-              />
+              >
+                <option value="">Select your size</option>
+                {SHOE_SIZES.map((s) => (
+                  <option key={s} value={s}>US {s}</option>
+                ))}
+              </select>
               <p className="text-xs text-slate-400 mt-1">Required for shoe orders</p>
             </div>
           )}
