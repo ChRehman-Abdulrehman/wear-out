@@ -167,8 +167,9 @@ export default function ProductDetail() {
               <input
                 className="input-field"
                 value={shoePhone}
-                onChange={(e) => setShoePhone(e.target.value)}
-                placeholder="+92..."
+                onChange={(e) => setShoePhone(e.target.value.replace(/[^0-9+]/g, ''))}
+                onKeyDown={(e) => { if (/[a-zA-Z!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key)) e.preventDefault(); }}
+                placeholder="+923001234567"
                 required
               />
               <p className="text-xs text-slate-400 mt-1">Required for shoe orders</p>

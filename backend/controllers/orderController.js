@@ -19,6 +19,26 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: 'Customer and at least one item are required' });
     }
 
+    // Server-side customer field validation
+    if (!customer.fullName || !/^[a-zA-Z\s]+$/.test(customer.fullName.trim())) {
+      return res.status(400).json({ message: 'Valid name is required (letters only)' });
+    }
+    if (!customer.age || Number(customer.age) < 1 || Number(customer.age) > 120) {
+      return res.status(400).json({ message: 'Valid age is required (1-120)' });
+    }
+    if (!customer.city || !/^[a-zA-Z\s]+$/.test(customer.city.trim())) {
+      return res.status(400).json({ message: 'Valid city is required (letters only)' });
+    }
+    if (!customer.address || customer.address.trim().length < 5) {
+      return res.status(400).json({ message: 'Valid address is required' });
+    }
+    if (!customer.whatsapp || !/^\+?[0-9]{7,15}$/.test(customer.whatsapp.replace(/\s/g, ''))) {
+      return res.status(400).json({ message: 'Valid WhatsApp number is required (7-15 digits)' });
+    }
+    if (!customer.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email)) {
+      return res.status(400).json({ message: 'Valid email address is required' });
+    }
+
     // Resolve product snapshots + validate stock/size + decrement stock
     const resolvedItems = [];
     let total = 0;

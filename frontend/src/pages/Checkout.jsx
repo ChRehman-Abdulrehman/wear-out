@@ -55,12 +55,14 @@ export default function Checkout() {
 
   const validate = () => {
     const e = {};
-    if (!form.fullName.trim()) e.fullName = 'Required';
-    if (!form.age || Number(form.age) < 1) e.age = 'Valid age required';
-    if (!form.city.trim()) e.city = 'Required';
-    if (!form.address.trim()) e.address = 'Required';
-    if (!/^\+?[0-9]{7,15}$/.test(form.whatsapp.replace(/\s/g, ''))) e.whatsapp = 'Enter a valid phone number';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email';
+    if (!form.fullName.trim()) e.fullName = 'Name is required';
+    else if (!/^[a-zA-Z\s]+$/.test(form.fullName.trim())) e.fullName = 'Name must contain only letters';
+    if (!form.age || Number(form.age) < 1 || Number(form.age) > 120) e.age = 'Enter a valid age (1-120)';
+    if (!form.city.trim()) e.city = 'City is required';
+    else if (!/^[a-zA-Z\s]+$/.test(form.city.trim())) e.city = 'City must contain only letters';
+    if (!form.address.trim()) e.address = 'Address is required';
+    if (!/^\+?[0-9]{7,15}$/.test(form.whatsapp.replace(/\s/g, ''))) e.whatsapp = 'Enter a valid phone number (7-15 digits)';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email address';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -133,30 +135,39 @@ export default function Checkout() {
             <div>
               <label className="text-sm text-slate-600">Full Name *</label>
               <input className="input-field" value={form.fullName}
-                onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
+                placeholder="e.g. Ahmed Khan"
+                onKeyDown={(e) => { if (/[0-9]/.test(e.key) || /[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key)) e.preventDefault(); }}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} />
               {errors.fullName && <p className="text-red-400 text-xs mt-1">{errors.fullName}</p>}
             </div>
             <div>
               <label className="text-sm text-slate-600">Age *</label>
-              <input type="number" className="input-field" value={form.age}
-                onChange={(e) => setForm({ ...form, age: e.target.value })} />
+              <input type="number" min="1" max="120" className="input-field" value={form.age}
+                placeholder="e.g. 25"
+                onKeyDown={(e) => { if (e.key === '-' || e.key === '+' || e.key === '.' || e.key === 'e') e.preventDefault(); }}
+                onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setForm({ ...form, age: v }); }} />
               {errors.age && <p className="text-red-400 text-xs mt-1">{errors.age}</p>}
             </div>
             <div>
               <label className="text-sm text-slate-600">City *</label>
               <input className="input-field" value={form.city}
-                onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                placeholder="e.g. Lahore"
+                onKeyDown={(e) => { if (/[0-9]/.test(e.key) || /[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key)) e.preventDefault(); }}
+                onChange={(e) => setForm({ ...form, city: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} />
               {errors.city && <p className="text-red-400 text-xs mt-1">{errors.city}</p>}
             </div>
             <div>
               <label className="text-sm text-slate-600">WhatsApp Number *</label>
               <input className="input-field" value={form.whatsapp}
-                onChange={(e) => setForm({ ...form, whatsapp: e.target.value })} placeholder="+92..." />
+                placeholder="+923001234567"
+                onKeyDown={(e) => { if (/[a-zA-Z!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key)) e.preventDefault(); }}
+                onChange={(e) => setForm({ ...form, whatsapp: e.target.value.replace(/[^0-9+]/g, '') })} />
               {errors.whatsapp && <p className="text-red-400 text-xs mt-1">{errors.whatsapp}</p>}
             </div>
             <div>
               <label className="text-sm text-slate-600">Email *</label>
-              <input className="input-field" value={form.email}
+              <input type="email" className="input-field" value={form.email}
+                placeholder="example@gmail.com"
                 onChange={(e) => setForm({ ...form, email: e.target.value })} />
               {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
             </div>
@@ -173,7 +184,9 @@ export default function Checkout() {
           <div>
             <label className="text-sm text-slate-600">Full Address *</label>
             <textarea className="input-field min-h-[80px]" value={form.address}
-              onChange={(e) => setForm({ ...form, address: e.target.value })} />
+              placeholder="House #, Street, Area, City"
+              onKeyDown={(e) => { if (/[!@#$%^&*()_+=\[\]{};':"\\|<>?`~]/.test(e.key)) e.preventDefault(); }}
+              onChange={(e) => setForm({ ...form, address: e.target.value.replace(/[^a-zA-Z0-9\s,.\-#/]/g, '') })} />
             {errors.address && <p className="text-red-400 text-xs mt-1">{errors.address}</p>}
           </div>
           <button type="submit" disabled={submitting} className="btn-gold w-full">
