@@ -119,6 +119,17 @@ export const api = {
   // seller analytics
   sellerGetDashboard: (token) => sellerClient.get('/seller/analytics', { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.data),
   sellerGetCustomers: (token) => sellerClient.get('/seller/customers', { headers: { Authorization: `Bearer ${token}` } }).then((r) => r.data),
+
+  // blog (public)
+  getBlogs: (params = {}) => client.get('/blog', { params }).then((r) => r.data),
+  getBlogBySlug: (slug) => client.get(`/blog/${slug}`).then((r) => r.data),
+  getBlogCategories: () => client.get('/blog/categories').then((r) => r.data),
+
+  // blog (admin)
+  adminGetBlogs: () => client.get('/blog/admin/all').then((r) => r.data),
+  adminCreateBlog: (data) => client.post('/blog/admin', data).then((r) => r.data),
+  adminUpdateBlog: (id, data) => client.put(`/blog/admin/${id}`, data).then((r) => r.data),
+  adminDeleteBlog: (id) => client.delete(`/blog/admin/${id}`).then((r) => r.data),
 };
 
 export default api;

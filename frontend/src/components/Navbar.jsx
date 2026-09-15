@@ -59,6 +59,9 @@ export default function Navbar() {
           <NavLink to="/bulk-orders" className={linkClass}>
             Bulk Orders
           </NavLink>
+          <NavLink to="/blog" className={linkClass}>
+            Blog
+          </NavLink>
         </nav>
 
         <form onSubmit={onSearch} className="hidden md:flex items-center">
@@ -122,6 +125,9 @@ export default function Navbar() {
             </NavLink>
             <NavLink to="/bulk-orders" className={linkClass} onClick={() => setOpen(false)}>
               Bulk Orders
+            </NavLink>
+            <NavLink to="/blog" className={linkClass} onClick={() => setOpen(false)}>
+              Blog
             </NavLink>
           </div>
         </div>

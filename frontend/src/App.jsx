@@ -12,12 +12,16 @@ import Checkout from './pages/Checkout';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import BulkOrders from './pages/BulkOrders';
+import FAQ from './pages/FAQ';
+import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
 import NotFound from './pages/NotFound';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminLayout from './pages/admin/AdminLayout';
 import Dashboard from './pages/admin/Dashboard';
 import Products from './pages/admin/Products';
 import Orders from './pages/admin/Orders';
+import BlogManager from './pages/admin/BlogManager';
 import SellerLogin from './pages/seller/SellerLogin';
 import SellerSignup from './pages/seller/SellerSignup';
 import ShopkeeperLayout from './pages/seller/ShopkeeperLayout';
@@ -65,6 +69,9 @@ export default function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/bulk-orders" element={<BulkOrders />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogDetail />} />
               </Route>
 
               <Route path="/admin/login" element={<AdminLogin />} />
@@ -81,6 +88,7 @@ export default function App() {
                   <Route index element={<Dashboard />} />
                   <Route path="products" element={<Products />} />
                   <Route path="orders" element={<Orders />} />
+                  <Route path="blog" element={<BlogManager />} />
                   <Route path="customers" element={<Suspense fallback={<AdminFallback />}><Customers /></Suspense>} />
                   <Route path="reviews" element={<Suspense fallback={<AdminFallback />}><ReviewsModeration /></Suspense>} />
                   <Route path="shopkeepers" element={<Suspense fallback={<AdminFallback />}><Shopkeepers /></Suspense>} />

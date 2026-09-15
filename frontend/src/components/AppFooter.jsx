@@ -35,6 +35,8 @@ export default function Footer() {
             <li><Link to="/about" className="hover:text-gold">About Us</Link></li>
             <li><Link to="/contact" className="hover:text-gold">Contact</Link></li>
             <li><Link to="/bulk-orders" className="hover:text-gold">Bulk Orders / Resellers</Link></li>
+            <li><Link to="/blog" className="hover:text-gold">Blog</Link></li>
+            <li><Link to="/faq" className="hover:text-gold">FAQ</Link></li>
           </ul>
         </div>
 
