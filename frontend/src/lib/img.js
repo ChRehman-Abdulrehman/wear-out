@@ -15,7 +15,7 @@ export function getProductImages(product) {
 function optimizeCloudinary(url) {
   if (!url.includes('cloudinary.com')) return url;
   if (url.includes('/upload/')) {
-    return url.replace('/upload/', '/upload/f_auto,q_auto,w_600/');
+    return url.replace('/upload/', '/upload/f_auto,q_auto,w_800/');
   }
   return url;
 }

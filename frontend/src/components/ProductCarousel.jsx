@@ -11,14 +11,14 @@ export default function ProductCarousel({ images = [], alt = '', className = '' 
   if (safeImages.length <= 1) {
     return (
       <div className={`relative overflow-hidden ${className}`}>
-        <img src={imgUrl(safeImages[0])} alt={alt} className="w-full h-full object-cover" decoding="async" />
+        <img src={imgUrl(safeImages[0])} alt={alt} className="absolute inset-0 w-full h-full object-cover" decoding="async" />
       </div>
     );
   }
 
   return (
     <div className={`relative overflow-hidden group ${className}`}>
-      <img src={imgUrl(safeImages[current])} alt={alt} className="w-full h-full object-cover transition-opacity duration-300" decoding="async" />
+      <img src={imgUrl(safeImages[current])} alt={alt} className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300" decoding="async" />
 
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }}
