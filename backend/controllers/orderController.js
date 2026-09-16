@@ -64,13 +64,20 @@ exports.createOrder = async (req, res) => {
       total += product.price * qty;
     }
 
-    // Decrement stock after validation passes
+    // Atomic stock decrement with $inc guard
     for (const it of resolvedItems) {
-      const product = await Product.findById(it.product);
-      if (product && product.stock > 0) {
-        product.stock = Math.max(0, product.stock - it.quantity);
-        product.inStock = product.stock > 0;
-        await product.save();
+      const updated = await Product.findOneAndUpdate(
+        { _id: it.product, stock: { $gte: it.quantity } },
+        { $inc: { stock: -it.quantity }, $set: { inStock: true } },
+        { new: true }
+      );
+      if (!updated) {
+        return res.status(400).json({ message: `Insufficient stock for ${it.name}` });
+      }
+      // Update inStock based on new stock value
+      if (updated.stock <= 0) {
+        updated.inStock = false;
+        await updated.save();
       }
     }
 
@@ -95,7 +102,7 @@ exports.createOrder = async (req, res) => {
     await order.save();
     res.status(201).json({ message: 'Order placed successfully', order });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -125,6 +132,10 @@ exports.getOrders = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status, courier } = req.body;
+    const allowedStatuses = ['Order Placed', 'Processing', 'On Delivery', 'Completed', 'Returned', 'Cancelled'];
+    if (status && !allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: 'Order not found' });
     if (status) order.status = status;

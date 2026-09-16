@@ -9,7 +9,8 @@ exports.getProducts = async (req, res) => {
     if (featured === 'true') filter.featured = true;
     if (gender) filter.gender = gender;
     if (search) {
-      const re = new RegExp(search.trim(), 'i');
+      const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(escaped, 'i');
       filter.$or = [{ name: re }, { description: re }, { category: re }];
     }
     const skip = (Number(page) - 1) * Number(limit);
@@ -72,7 +73,7 @@ exports.createProduct = async (req, res) => {
     await product.save();
     res.status(201).json(product);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -111,7 +112,7 @@ exports.updateProduct = async (req, res) => {
     await product.save();
     res.json(product);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

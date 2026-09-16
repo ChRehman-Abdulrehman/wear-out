@@ -59,7 +59,7 @@ router.post('/products', upload.array('images', 10), async (req, res) => {
     await product.save();
     res.status(201).json(product);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -131,9 +131,14 @@ router.get('/orders', async (req, res) => {
 router.put('/orders/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
+    const allowedStatuses = ['Order Placed', 'Processing', 'On Delivery', 'Completed', 'Returned', 'Cancelled'];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: 'Order not found' });
     order.status = status;
+    if (status === 'Completed' && !order.deliveredAt) order.deliveredAt = new Date();
     await order.save();
     res.json(order);
   } catch (err) {

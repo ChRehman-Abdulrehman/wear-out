@@ -20,7 +20,7 @@ exports.signup = async (req, res) => {
       shopkeeper: { id: shopkeeper._id, shopName: shopkeeper.shopName, status: shopkeeper.status },
     });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const Shopkeeper = require('../models/Shopkeeper');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'wearout-shopkeeper-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) throw new Error('JWT_SECRET environment variable is required');
 
 exports.shopkeeperSign = (shopkeeper) =>
   jwt.sign({ id: shopkeeper._id, role: 'shopkeeper' }, JWT_SECRET, { expiresIn: '7d' });
@@ -34,7 +35,7 @@ exports.adminProtect = async (req, res, next) => {
     return res.status(401).json({ message: 'Not authorized, no token' });
 
   try {
-    const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET || 'wearout-admin-secret');
+    const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET);
     if (decoded.role !== 'admin')
       return res.status(403).json({ message: 'Not an admin account' });
 

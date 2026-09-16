@@ -130,6 +130,13 @@ export const api = {
   adminCreateBlog: (data) => client.post('/blog/admin', data).then((r) => r.data),
   adminUpdateBlog: (id, data) => client.put(`/blog/admin/${id}`, data).then((r) => r.data),
   adminDeleteBlog: (id) => client.delete(`/blog/admin/${id}`).then((r) => r.data),
+  adminUploadBlogImage: (file) => {
+    const fd = new FormData();
+    fd.append('image', file);
+    return client.post('/blog/admin/upload', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data);
+  },
 };
 
 export default api;

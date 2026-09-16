@@ -6,8 +6,8 @@ const Admin = require('../models/Admin');
 exports.ensureAdminExists = async () => {
   const count = await Admin.countDocuments();
   if (count === 0) {
-    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'wearout123', 12);
-    await Admin.create({ email: process.env.ADMIN_EMAIL || 'admin@wearout.store', passwordHash: hash });
+    const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
+    await Admin.create({ email: process.env.ADMIN_EMAIL, passwordHash: hash });
     console.log('Seeded default admin from environment.');
   }
 };
@@ -19,7 +19,7 @@ exports.login = async (req, res) => {
     if (!admin) return res.status(401).json({ message: 'Invalid credentials' });
     const match = await bcrypt.compare(password, admin.passwordHash);
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
-    const token = jwt.sign({ id: admin._id, email: admin.email }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: admin._id, email: admin.email, role: 'admin' }, process.env.JWT_SECRET, {
       expiresIn: '12h',
     });
     res.json({ token, email: admin.email });

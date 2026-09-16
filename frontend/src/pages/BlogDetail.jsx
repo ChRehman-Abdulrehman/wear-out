@@ -25,7 +25,7 @@ export default function BlogDetail() {
     <div className="max-w-3xl mx-auto px-4 py-12">
       <SEO
         title={blog.title}
-        description={blog.excerpt}
+        description={blog.metaDescription || blog.excerpt}
         keywords={`${blog.title}, Wear Out blog, streetwear Pakistan, ${blog.category}`}
         image={blog.image}
         url={`/blog/${blog.slug}`}
@@ -34,7 +34,7 @@ export default function BlogDetail() {
           '@context': 'https://schema.org',
           '@type': 'Article',
           headline: blog.title,
-          description: blog.excerpt,
+          description: blog.metaDescription || blog.excerpt,
           image: blog.image || undefined,
           datePublished: blog.createdAt,
           dateModified: blog.updatedAt,
@@ -86,7 +86,7 @@ export default function BlogDetail() {
           prose-li:mb-2
           prose-strong:text-ink
           prose-a:text-gold prose-a:no-underline hover:prose-a:underline
-          prose-img:rounded-lg"
+          prose-img:rounded-lg prose-img:w-full prose-img:my-6 prose-img:shadow-sm"
         dangerouslySetInnerHTML={{ __html: blog.content }}
       />
     </div>

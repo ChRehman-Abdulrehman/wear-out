@@ -16,7 +16,7 @@ exports.submitReview = async (req, res) => {
     await review.save();
     res.status(201).json({ message: 'Review submitted and awaiting approval', review });
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

@@ -1,4 +1,21 @@
 const Blog = require('../models/Blog');
+const sanitizeHtml = require('sanitize-html');
+
+const cleanBlogContent = (html) => sanitizeHtml(html, {
+  allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+    'img', 'h1', 'h2', 'h3', 'figure', 'figcaption', 'video', 'source',
+    'table', 'thead', 'tbody', 'tr', 'th', 'td',
+  ]),
+  allowedAttributes: {
+    ...sanitizeHtml.defaults.allowedAttributes,
+    img: ['src', 'alt', 'className', 'class', 'width', 'height', 'loading'],
+    video: ['src', 'controls', 'className', 'class', 'width', 'height'],
+    source: ['src', 'type'],
+    td: ['colSpan', 'rowSpan'],
+    th: ['colSpan', 'rowSpan'],
+  },
+  allowedSchemes: ['http', 'https', 'data'],
+});
 
 // Public: get all published posts
 exports.getBlogs = async (req, res) => {
@@ -54,7 +71,7 @@ exports.adminGetBlogs = async (req, res) => {
 // Admin: create post
 exports.createBlog = async (req, res) => {
   try {
-    const { title, slug, excerpt, content, image, category, tags, published } = req.body;
+    const { title, slug, excerpt, metaDescription, content, image, category, tags, published } = req.body;
     let finalSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     const exists = await Blog.findOne({ slug: finalSlug });
     if (exists) return res.status(400).json({ message: 'Slug already exists' });
@@ -62,7 +79,8 @@ exports.createBlog = async (req, res) => {
       title,
       slug: finalSlug,
       excerpt,
-      content,
+      metaDescription: metaDescription || '',
+      content: cleanBlogContent(content),
       image: image || '',
       category: category || 'General',
       tags: tags ? (typeof tags === 'string' ? tags.split(',').map((t) => t.trim()).filter(Boolean) : tags) : [],
@@ -71,7 +89,7 @@ exports.createBlog = async (req, res) => {
     await blog.save();
     res.status(201).json(blog);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -80,11 +98,12 @@ exports.updateBlog = async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ message: 'Blog post not found' });
-    const { title, slug, excerpt, content, image, category, tags, published } = req.body;
+    const { title, slug, excerpt, metaDescription, content, image, category, tags, published } = req.body;
     if (title !== undefined) blog.title = title;
     if (slug !== undefined) blog.slug = slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (excerpt !== undefined) blog.excerpt = excerpt;
-    if (content !== undefined) blog.content = content;
+    if (metaDescription !== undefined) blog.metaDescription = metaDescription;
+    if (content !== undefined) blog.content = cleanBlogContent(content);
     if (image !== undefined) blog.image = image;
     if (category !== undefined) blog.category = category;
     if (tags !== undefined) blog.tags = typeof tags === 'string' ? tags.split(',').map((t) => t.trim()).filter(Boolean) : tags;
@@ -92,7 +111,7 @@ exports.updateBlog = async (req, res) => {
     await blog.save();
     res.json(blog);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

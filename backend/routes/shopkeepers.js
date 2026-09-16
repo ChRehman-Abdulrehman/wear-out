@@ -4,6 +4,7 @@ const ctrl = require('../controllers/shopkeeperController');
 const { shopkeeperProtect } = require('../middleware/shopkeeperAuth');
 const { body } = require('express-validator');
 const { handleValidation } = require('../middleware/validate');
+const { authLimiter } = require('../middleware/rateLimiter');
 
 // Public
 router.post(
@@ -21,6 +22,7 @@ router.post(
 
 router.post(
   '/login',
+  authLimiter,
   [body('email').isEmail(), body('password').isString().notEmpty()],
   handleValidation,
   ctrl.login

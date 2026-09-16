@@ -13,7 +13,7 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : true,
+    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['https://wearout.shop', 'https://www.wearout.shop'],
     credentials: true,
   })
 );
@@ -32,6 +32,15 @@ app.use('/api/admin', require('./routes/adminShopkeepers'));
 app.use('/api/blog', require('./routes/blog'));
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err.message);
+  if (err.type === 'entity.too.large') {
+    return res.status(413).json({ message: 'Request payload too large' });
+  }
+  res.status(500).json({ message: 'Internal server error' });
+});
 
 // Seed default couriers
 async function seedCouriers() {
