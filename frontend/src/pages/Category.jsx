@@ -77,7 +77,7 @@ export default function Category() {
           <select
             value={gender}
             onChange={(e) => setGender(e.target.value)}
-            className="input-field w-auto"
+            className="input-field w-auto min-w-[120px]"
           >
             <option value="">All</option>
             <option value="Male">Male</option>
@@ -94,7 +94,7 @@ export default function Category() {
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {products.map((p) => (
-            <ProductCard key={p._id} product={p} />
+            <ProductCard key={p._id} product={p} hideCategory />
           ))}
         </div>
       )}

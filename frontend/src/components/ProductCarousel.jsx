@@ -12,9 +12,6 @@ export default function ProductCarousel({ images = [], alt = '', className = '' 
     return (
       <div className={`relative overflow-hidden ${className}`}>
         <img src={imgUrl(safeImages[0])} alt={alt} className="w-full h-full object-cover" decoding="async" />
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0">
-          <span className="w-2 h-2 rounded-full bg-gold" />
-        </div>
       </div>
     );
   }
@@ -25,13 +22,13 @@ export default function ProductCarousel({ images = [], alt = '', className = '' 
 
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); prev(); }}
-        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+        className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
       >
         ‹
       </button>
       <button
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); next(); }}
-        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
+        className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm"
       >
         ›
       </button>

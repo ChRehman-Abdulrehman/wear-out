@@ -13,7 +13,7 @@ export default function BulkOrders() {
         keywords="bulk order Pakistan, wholesale streetwear Pakistan, Wear Out wholesale, reseller Pakistan, shopkeeper bulk order, wholesale clothing Pakistan, buy in bulk Pakistan"
         url="/bulk-orders"
       />
-      <h1 className="font-display text-4xl sm:text-5xl text-metallic tracking-wider mb-6 uppercase text-center">
+      <h1 className="font-display text-4xl sm:text-5xl text-metallic tracking-wider mb-6 text-center">
         Bulk Orders &amp; Resellers
       </h1>
 

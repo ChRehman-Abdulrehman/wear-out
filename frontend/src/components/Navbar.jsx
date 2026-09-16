@@ -31,20 +31,20 @@ export default function Navbar() {
   };
 
   const linkClass = ({ isActive }) =>
-    `px-3 py-1.5 text-xs uppercase tracking-wide border-2 rounded-md transition-all duration-200 whitespace-nowrap h-[31px] flex items-center ${
+    `px-3 py-1.5 text-xs uppercase tracking-wide rounded-md transition-all duration-200 whitespace-nowrap h-[31px] flex items-center ${
       isActive
-        ? 'border-black bg-black text-white'
-        : 'border-black text-black hover:bg-black hover:text-white'
+        ? 'bg-black text-white font-semibold'
+        : 'text-slate-600 hover:text-black hover:bg-slate-100'
     }`;
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-gold/30">
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/assets/logo.webp" alt="Wear Out" className="h-9 w-auto" fetchPriority="high" />
+          <img src="/assets/logo.webp" alt="Wear Out" className="h-11 w-auto" fetchPriority="high" />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-1">
+        <nav className="hidden md:flex items-center gap-1.5">
           {realCategories.map((c) => (
             <NavLink key={c.name} to={c.to} className={linkClass}>
               {c.name}
@@ -64,16 +64,16 @@ export default function Navbar() {
           </NavLink>
         </nav>
 
-        <form onSubmit={onSearch} className="hidden md:flex items-center ml-3">
+        <form onSubmit={onSearch} className="hidden md:flex items-center ml-4">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search products…"
-            className="w-40 lg:w-56 rounded-md border border-slate-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+            className="w-40 lg:w-56 rounded-md border border-slate-400 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
           />
         </form>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-3">
           <Link to="/cart" className="relative text-slate-700 hover:text-gold" aria-label="Cart">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="21" r="1" />
@@ -108,7 +108,7 @@ export default function Navbar() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search products…"
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
+              className="w-full rounded-md border border-slate-400 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gold/60"
             />
           </form>
           <div className="flex flex-col gap-2">
