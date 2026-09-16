@@ -29,7 +29,7 @@ export default function ProductCard({ product }) {
         )}
       </div>
       <div className="p-4">
-        <h3 className="font-display tracking-wide text-lg text-slate-800 group-hover:text-gold transition-colors truncate">
+        <h3 className="font-display tracking-wide text-lg text-slate-800 group-hover:text-gold transition-colors line-clamp-2 min-h-[3.5rem] capitalize">
           {product.name}
         </h3>
         {product.shopName && (

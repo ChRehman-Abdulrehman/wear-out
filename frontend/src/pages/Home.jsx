@@ -78,10 +78,10 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 py-16">
         <div className="flex items-end justify-between mb-8">
           <div>
-            <h2 className="font-display text-4xl sm:text-5xl text-metallic tracking-wider">FEATURED COLLECTION</h2>
+            <h2 className="font-display text-4xl sm:text-5xl text-metallic tracking-wider">Featured Collection</h2>
             <p className="text-slate-500 mt-1">Fresh fits. Wear your confidence.</p>
           </div>
-          <Link to="/shirts" className="text-gold text-sm uppercase tracking-widest hover:underline">
+          <Link to="/shirts" className="text-gold text-sm sm:text-base font-semibold uppercase tracking-widest hover:underline">
             Shop all →
           </Link>
         </div>
@@ -112,7 +112,7 @@ export default function Home() {
       {/* Categories */}
       <section className="bg-white border-y border-gold/20">
         <div className="max-w-7xl mx-auto px-4 py-14">
-          <h2 className="font-display text-4xl text-metallic text-center mb-10 tracking-wider">SHOP BY CATEGORY</h2>
+          <h2 className="font-display text-4xl text-metallic text-center mb-10 tracking-wider">Shop by Category</h2>
           <div className="grid grid-cols-3 md:flex md:flex-wrap md:justify-center gap-3">
             {realCats.map((c) => {
               const cat = CATEGORIES.find((x) => x.value === c.name);

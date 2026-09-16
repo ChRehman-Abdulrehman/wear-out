@@ -17,7 +17,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-gold font-semibold mb-3 uppercase text-sm">Shop</h4>
+          <p className="text-gold font-semibold mb-3 uppercase text-sm">Shop</p>
           <ul className="space-y-2 text-sm text-slate-600">
             <li><Link to="/shirts" className="hover:text-gold">Shirts</Link></li>
             <li><Link to="/trousers" className="hover:text-gold">Trousers</Link></li>
@@ -30,7 +30,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-gold font-semibold mb-3 uppercase text-sm">Company</h4>
+          <p className="text-gold font-semibold mb-3 uppercase text-sm">Company</p>
           <ul className="space-y-2 text-sm text-slate-600">
             <li><Link to="/about" className="hover:text-gold">About Us</Link></li>
             <li><Link to="/contact" className="hover:text-gold">Contact</Link></li>
@@ -41,7 +41,7 @@ export default function Footer() {
         </div>
 
         <div>
-          <h4 className="text-gold font-semibold mb-3 uppercase text-sm">Connect</h4>
+          <p className="text-gold font-semibold mb-3 uppercase text-sm">Connect</p>
           <ul className="space-y-2 text-sm text-slate-600">
             {c.whatsapp && (
               <li>

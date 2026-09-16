@@ -31,7 +31,7 @@ export default function Navbar() {
   };
 
   const linkClass = ({ isActive }) =>
-    `px-3 py-1.5 text-xs uppercase tracking-wide border-2 rounded-md transition-all duration-200 ${
+    `px-3 py-1.5 text-xs uppercase tracking-wide border-2 rounded-md transition-all duration-200 whitespace-nowrap h-[31px] flex items-center ${
       isActive
         ? 'border-black bg-black text-white'
         : 'border-black text-black hover:bg-black hover:text-white'
@@ -64,7 +64,7 @@ export default function Navbar() {
           </NavLink>
         </nav>
 
-        <form onSubmit={onSearch} className="hidden md:flex items-center">
+        <form onSubmit={onSearch} className="hidden md:flex items-center ml-3">
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}

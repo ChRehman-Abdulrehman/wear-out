@@ -41,7 +41,7 @@ export default function BrandHero() {
             fetchPriority="high"
           />
         </div>
-        <div className="absolute inset-0 z-0 bg-mist/10" />
+        <div className="absolute inset-0 z-0 bg-black/30" />
 
         <div className="relative z-10 flex flex-col items-center justify-center px-4">
           <h1
@@ -52,6 +52,8 @@ export default function BrandHero() {
               letterSpacing: '-0.02em',
               transform: 'skewX(-8deg)',
               textTransform: 'uppercase',
+              textShadow: '0 4px 20px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+              color: '#fff',
             }}
           >
             {word.split('').map((ch, i) => (
@@ -65,8 +67,8 @@ export default function BrandHero() {
             transition={{ duration: 0.8, ease: 'easeOut' }}
             className="mt-6"
           >
-            <p className="text-gold tracking-[0.4em] uppercase text-sm sm:text-base drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">Wear Your Confidence</p>
-            <p className="text-black mt-4 max-w-md mx-auto drop-shadow-[0_1px_3px_rgba(255,255,255,0.85)]">
+            <p className="text-gold tracking-[0.15em] text-sm sm:text-base drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">Wear Your Confidence</p>
+            <p className="text-white mt-4 max-w-md mx-auto drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
               Premium streetwear built to make a statement. Bold fits, clean lines, unapologetic confidence.
             </p>
             <div className="flex gap-3 justify-center mt-8">

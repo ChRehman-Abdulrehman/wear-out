@@ -12,6 +12,9 @@ export default function ProductCarousel({ images = [], alt = '', className = '' 
     return (
       <div className={`relative overflow-hidden ${className}`}>
         <img src={imgUrl(safeImages[0])} alt={alt} className="w-full h-full object-cover" decoding="async" />
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 opacity-0">
+          <span className="w-2 h-2 rounded-full bg-gold" />
+        </div>
       </div>
     );
   }
