@@ -11,18 +11,23 @@
     "test": "node tests/smoke.test.js"
   },
   "dependencies": {
+    "@sentry/node": "^11.4.0",
     "bcryptjs": "^2.4.3",
+    "bullmq": "^6.3.11",
+    "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.0",
     "express-validator": "^7.1.0",
     "helmet": "^7.1.0",
+    "ioredis": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.1",
     "multer": "^1.4.5-lts.1",
-    "cloudinary": "^2.5.1",
-    "sanitize-html": "^2.13.0"
+    "rate-limiter-flexible": "^11.2.1",
+    "sanitize-html": "^2.13.0",
+    "stripe": "^23.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

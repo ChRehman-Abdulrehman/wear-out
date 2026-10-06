@@ -1,5 +1,6 @@
 const Order = require('../models/Order');
-const Product = require('../models/Product');
+const Product = require('../models/Order');
+const { addOrderConfirmationJob } = require('../queues/orderQueue');
 
 const buildReference = () => 'WO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
 
@@ -100,6 +101,8 @@ exports.createOrder = async (req, res) => {
       reference,
     });
     await order.save();
+    // Add order confirmation to background queue
+    await addOrderConfirmationJob(order._id);
     res.status(201).json({ message: 'Order placed successfully', order });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });

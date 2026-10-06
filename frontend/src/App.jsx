@@ -32,6 +32,8 @@ import ShopkeeperCustomers from './pages/seller/ShopkeeperCustomers';
 import { CartProvider } from './context/CartContext';
 import { AdminAuthProvider } from './context/AdminAuth';
 import { ConfigProvider } from './context/ConfigContext';
+import store from './store';
+import { Provider } from 'react-redux';
 
 const Customers = lazy(() => import('./pages/admin/Customers'));
 const ReviewsModeration = lazy(() => import('./pages/admin/ReviewsModeration'));
@@ -49,60 +51,62 @@ export default function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <ConfigProvider>
-        <AdminAuthProvider>
-          <CartProvider>
-            <Routes>
-              <Route element={<Layout />}>
-                <Route path="/" element={<Home />} />
-                <Route path="/shirts" element={<Category />} />
-                <Route path="/trousers" element={<Category />} />
-                <Route path="/caps" element={<Category />} />
-                <Route path="/unstitch" element={<Category />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/watches" element={<Category />} />
-                <Route path="/accessories" element={<Category />} />
-                <Route path="/shoes" element={<Category />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/bulk-orders" element={<BulkOrders />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:slug" element={<BlogDetail />} />
-              </Route>
-
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/seller/login" element={<SellerLogin />} />
-              <Route path="/seller/signup" element={<SellerSignup />} />
-              <Route path="/seller" element={<ShopkeeperLayout />}>
-                <Route index element={<ShopkeeperDashboard />} />
-                <Route path="products" element={<ShopkeeperProducts />} />
-                <Route path="orders" element={<ShopkeeperOrders />} />
-                <Route path="customers" element={<ShopkeeperCustomers />} />
-              </Route>
-              <Route path="/admin" element={<ProtectedRoute />}>
-                <Route element={<AdminLayout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="products" element={<Products />} />
-                  <Route path="orders" element={<Orders />} />
-                  <Route path="blog" element={<BlogManager />} />
-                  <Route path="customers" element={<Suspense fallback={<AdminFallback />}><Customers /></Suspense>} />
-                  <Route path="reviews" element={<Suspense fallback={<AdminFallback />}><ReviewsModeration /></Suspense>} />
-                  <Route path="shopkeepers" element={<Suspense fallback={<AdminFallback />}><Shopkeepers /></Suspense>} />
-                  <Route path="featured-requests" element={<Suspense fallback={<AdminFallback />}><FeaturedRequests /></Suspense>} />
-                  <Route path="courier" element={<Suspense fallback={<AdminFallback />}><CourierHub /></Suspense>} />
-                  <Route path="logistics" element={<Suspense fallback={<AdminFallback />}><Logistics /></Suspense>} />
-                  <Route path="analytics" element={<Suspense fallback={<AdminFallback />}><Analytics /></Suspense>} />
+      <Provider store={store}>
+        <ConfigProvider>
+          <AdminAuthProvider>
+            <CartProvider>
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/shirts" element={<Category />} />
+                  <Route path="/trousers" element={<Category />} />
+                  <Route path="/caps" element={<Category />} />
+                  <Route path="/unstitch" element={<Category />} />
+                  <Route path="/search" element={<Search />} />
+                  <Route path="/watches" element={<Category />} />
+                  <Route path="/accessories" element={<Category />} />
+                  <Route path="/shoes" element={<Category />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/bulk-orders" element={<BulkOrders />} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="/blog/:slug" element={<BlogDetail />} />
                 </Route>
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </CartProvider>
-        </AdminAuthProvider>
-      </ConfigProvider>
+
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/seller/login" element={<SellerLogin />} />
+                <Route path="/seller/signup" element={<SellerSignup />} />
+                <Route path="/seller" element={<ShopkeeperLayout />}>
+                  <Route index element={<ShopkeeperDashboard />} />
+                  <Route path="products" element={<ShopkeeperProducts />} />
+                  <Route path="orders" element={<ShopkeeperOrders />} />
+                  <Route path="customers" element={<ShopkeeperCustomers />} />
+                </Route>
+                <Route path="/admin" element={<ProtectedRoute />}>
+                  <Route element={<AdminLayout />}>
+                    <Route index element={<Dashboard />} />
+                    <Route path="products" element={<Products />} />
+                    <Route path="orders" element={<Orders />} />
+                    <Route path="blog" element={<BlogManager />} />
+                    <Route path="customers" element={<Suspense fallback={<AdminFallback />}><Customers /></Suspense>} />
+                    <Route path="reviews" element={<Suspense fallback={<AdminFallback />}><ReviewsModeration /></Suspense>} />
+                    <Route path="shopkeepers" element={<Suspense fallback={<AdminFallback />}><Shopkeepers /></Suspense>} />
+                    <Route path="featured-requests" element={<Suspense fallback={<AdminFallback />}><FeaturedRequests /></Suspense>} />
+                    <Route path="courier" element={<Suspense fallback={<AdminFallback />}><CourierHub /></Suspense>} />
+                    <Route path="logistics" element={<Suspense fallback={<AdminFallback />}><Logistics /></Suspense>} />
+                    <Route path="analytics" element={<Suspense fallback={<AdminFallback />}><Analytics /></Suspense>} />
+                  </Route>
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </CartProvider>
+          </AdminAuthProvider>
+        </ConfigProvider>
+      </Provider>
     </BrowserRouter>
   );
 }

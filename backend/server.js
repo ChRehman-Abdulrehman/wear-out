@@ -4,20 +4,42 @@ const helmet = require('helmet');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
+const Sentry = require('@sentry/node');
+
 const connectDB = require('./config/db');
 const { ensureAdminExists } = require('./controllers/adminController');
 const Courier = require('./models/Courier');
 
 const app = express();
 
+// Initialize Sentry if DSN provided
+if (process.env.SENTRY_DSN) {
+  Sentry.init({ dsn: process.env.SENTRY_DSN });
+  app.use(Sentry.Handlers.requestHandler());
+}
+
+// Apply request logger BEFORE routes
+const requestLogger = require('./services/logger.service').requestLogger;
+app.use(requestLogger);
+
+// Trust first proxy (if behind load balancer)
+process.env.TRUSTED_PROXY = true;
+
+// Security headers
 app.use(helmet());
+
+// CORS configuration
 app.use(
   cors({
     origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['https://wearout.shop', 'https://www.wearout.shop'],
     credentials: true,
+    maxAge: 86400, // 24 hours preflight cache
   })
 );
+
+// Body parser with size limit
 app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 app.use('/api/products', require('./routes/products'));
@@ -30,44 +52,109 @@ app.use('/api/seller', require('./routes/shopkeepers'));
 app.use('/api/seller', require('./routes/sellers'));
 app.use('/api/admin', require('./routes/adminShopkeepers'));
 app.use('/api/blog', require('./routes/blog'));
+app.use('/api/payments', require('./routes/payments'));
 
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+// Health check endpoint with DB status
+app.get('/api/health', async (req, res) => {
+  try {
+    const dbStatus = global.getConnectionStatus || 'unknown';
+    const sentryStatus = process.env.SENTRY_DSN ? 'initialized' : 'not configured';
+    const memory = process.memoryUsage();
+    const heapUsedMB = Math.round(memory.heapUsed / 1024 / 1024);
 
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err.message);
-  if (err.type === 'entity.too.large') {
-    return res.status(413).json({ message: 'Request payload too large' });
+    res.json({
+      ok: true,
+      db: dbStatus,
+      sentry: sentryStatus,
+      memoryHeapMB: heapUsedMB,
+      uptime: process.uptime(),
+      version: '1.0.0',
+    });
+  } catch (err) {
+    // Fallback response
+    res.status(500).json({ ok: false, message: 'Health check failed' });
   }
-  res.status(500).json({ message: 'Internal server error' });
+});
+
+// Sentry error handler - must be after routes
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
+
+// Global error logger
+const errorLogger = require('./services/logger.service').errorLogger;
+
+// Global error handler (AFTER routes and Sentry)
+app.use(errorLogger);
+
+// Fallback error handler
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = process.env.NODE_ENV === 'production' && statusCode >= 500 ? 'Internal server error' : err.message || 'Unknown error';
+
+  // Don't send stack traces in production
+  const errorDetails = process.env.NODE_ENV === 'production' ? {} : {
+    error: err.message,
+    stack: err.stack,
+  };
+
+  res.status(statusCode).json({
+    success: false,
+    error: message,
+    ...errorDetails,
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // Seed default couriers
 async function seedCouriers() {
-  const defaults = [
-    { name: 'TCS', rating: 4.2 },
-    { name: 'Leopard Courier', rating: 4.0 },
-    { name: 'M&P', rating: 4.4 },
-  ];
-  for (const c of defaults) {
-    await Courier.updateOne({ name: c.name }, { $setOnInsert: { name: c.name, rating: c.rating } }, { upsert: true });
+  try {
+    const defaults = [
+      { name: 'TCS', rating: 4.2 },
+      { name: 'Leopard Courier', rating: 4.0 },
+      { name: 'M&P', rating: 4.4 },
+    ];
+    for (const c of defaults) {
+      await Courier.updateOne({ name: c.name }, { $setOnInsert: { name: c.name, rating: c.rating } }, { upsert: true });
+    }
+    console.log('📦 Default couriers seeded/verified');
+  } catch (err) {
+    // Use console.error since logger may not be fully initialized
+    console.error('❌ Error seeding couriers:', err.message);
   }
 }
 
+// Start server
 const PORT = process.env.PORT || 5000;
 
-async function start() {
+const start = async () => {
   try {
     await connectDB();
-    await ensureAdminExists();
     await seedCouriers();
-    app.listen(PORT, () => console.log(`Wear Out API running on port ${PORT}`));
+    app.listen(PORT, () => {
+      const memory = process.memoryUsage();
+      console.log(`🚀 Wear Out API running on port ${PORT}`);
+      console.log(`💾 Memory: ${Math.round(memory.heapUsed / 1024 / 1024)}MB heap used`);
+    });
   } catch (err) {
-    console.error('Failed to start server:', err.message);
+    console.error('❌ Failed to start server:', err.message);
     process.exit(1);
   }
-}
+};
 
 start();
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application does not crash by default
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err.message);
+  // Exit with failure code
+  process.exit(1);
+});
 
 module.exports = app;

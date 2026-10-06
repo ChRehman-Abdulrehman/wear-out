@@ -1,24 +1,32 @@
 const Product = require('../models/Product');
 const { uploadToCloudinary } = require('../middleware/upload');
+const { getOrSet, invalidate } = require('../services/cache.service');
 
 exports.getProducts = async (req, res) => {
   try {
     const { category, featured, search, gender, page = 1, limit = 50 } = req.query;
-    const filter = {};
-    if (category) filter.category = category;
-    if (featured === 'true') filter.featured = true;
-    if (gender) filter.gender = gender;
-    if (search) {
-      const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(escaped, 'i');
-      filter.$or = [{ name: re }, { description: re }, { category: re }];
-    }
-    const skip = (Number(page) - 1) * Number(limit);
-    const [products, total] = await Promise.all([
-      Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
-      Product.countDocuments(filter),
-    ]);
-    res.json({ products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    const cacheKey = `products:list:${category || 'all'}:${gender || 'all'}:${page}:${limit}`;
+
+    const fetchProducts = async () => {
+      const filter = {};
+      if (category) filter.category = category;
+      if (featured === 'true') filter.featured = true;
+      if (gender) filter.gender = gender;
+      if (search) {
+        const escaped = search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(escaped, 'i');
+        filter.$or = [{ name: re }, { description: re }, { category: re }];
+      }
+      const skip = (Number(page) - 1) * Number(limit);
+      const [products, total] = await Promise.all([
+        Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+        Product.countDocuments(filter),
+      ]);
+      return { products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) };
+    };
+
+    const result = await getOrSet(cacheKey, 60, fetchProducts);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -26,9 +34,19 @@ exports.getProducts = async (req, res) => {
 
 exports.getProduct = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: 'Product not found' });
-    res.json(product);
+    const cacheKey = `product:${req.params.id}`;
+
+    const fetchProduct = async () => {
+      const product = await Product.findById(req.params.id);
+      if (!product) return res.status(404).json({ message: 'Product not found' });
+      return product;
+    };
+
+    const result = await getOrSet(cacheKey, 300, fetchProduct);
+    if (typeof result === 'string') {
+      return res.json(JSON.parse(result));
+    }
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -71,6 +89,12 @@ exports.createProduct = async (req, res) => {
       gender: gender || 'Unisex',
     });
     await product.save();
+
+    // Invalidate relevant caches
+    await invalidate(`products:list:*`);
+    await invalidate(`products:featured`);
+    await invalidate(`product:${product._id}`);
+
     res.status(201).json(product);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -110,6 +134,12 @@ exports.updateProduct = async (req, res) => {
       if (!product.images || product.images.length === 0) product.images = [result.secure_url];
     }
     await product.save();
+
+    // Invalidate relevant caches
+    await invalidate(`products:list:*`);
+    await invalidate(`products:featured`);
+    await invalidate(`product:${product._id}`);
+
     res.json(product);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -118,8 +148,15 @@ exports.updateProduct = async (req, res) => {
 
 exports.deleteProduct = async (req, res) => {
   try {
+    const productId = req.params.id;
     const product = await Product.findByIdAndDelete(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // Invalidate relevant caches
+    await invalidate(`products:list:*`);
+    await invalidate(`products:featured`);
+    await invalidate(`product:${productId}`);
+
     res.json({ message: 'Product removed', id: req.params.id });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -128,8 +165,18 @@ exports.deleteProduct = async (req, res) => {
 
 exports.getFeaturedProducts = async (req, res) => {
   try {
-    const products = await Product.find({ featured: true }).sort({ createdAt: -1 }).limit(20);
-    res.json(products);
+    const cacheKey = 'products:featured';
+
+    const fetchFeatured = async () => {
+      const products = await Product.find({ featured: true }).sort({ createdAt: -1 }).limit(20);
+      return products;
+    };
+
+    const result = await getOrSet(cacheKey, 120, fetchFeatured);
+    if (typeof result === 'string') {
+      return res.json(JSON.parse(result));
+    }
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
