@@ -32,7 +32,7 @@ router.get('/:id', protect, ctrl.getOrder);
 router.put(
   '/:id/status',
   protect,
-  [body('status').optional().isIn(['Order Placed', 'On Delivery', 'Completed', 'Returned', 'Cancelled'])],
+  [body('status').optional().isIn(['Order Placed', 'Processing', 'On Delivery', 'Completed', 'Returned', 'Cancelled'])],
   handleValidation,
   ctrl.updateOrderStatus
 );

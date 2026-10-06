@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 
 const Sentry = require('@sentry/node');
 
-const connectDB = require('./config/db');
+const { connectDB } = require('./config/db');
 const { ensureAdminExists } = require('./controllers/adminController');
 const Courier = require('./models/Courier');
 
@@ -22,8 +22,8 @@ if (process.env.SENTRY_DSN) {
 const requestLogger = require('./services/logger.service').requestLogger;
 app.use(requestLogger);
 
-// Trust first proxy (if behind load balancer)
-process.env.TRUSTED_PROXY = true;
+// Trust first proxy (needed for correct client IP behind load balancer / rate limiting)
+app.set('trust proxy', 1);
 
 // Security headers
 app.use(helmet());
@@ -41,6 +41,13 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Local uploads directory (fallback for non-Cloudinary images)
+const path = require('path');
+const fs = require('fs');
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
+
 // Routes
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
@@ -54,24 +61,12 @@ app.use('/api/admin', require('./routes/adminShopkeepers'));
 app.use('/api/blog', require('./routes/blog'));
 app.use('/api/payments', require('./routes/payments'));
 
-// Health check endpoint with DB status
+// Health check endpoint
 app.get('/api/health', async (req, res) => {
   try {
     const dbStatus = global.getConnectionStatus || 'unknown';
-    const sentryStatus = process.env.SENTRY_DSN ? 'initialized' : 'not configured';
-    const memory = process.memoryUsage();
-    const heapUsedMB = Math.round(memory.heapUsed / 1024 / 1024);
-
-    res.json({
-      ok: true,
-      db: dbStatus,
-      sentry: sentryStatus,
-      memoryHeapMB: heapUsedMB,
-      uptime: process.uptime(),
-      version: '1.0.0',
-    });
+    res.json({ ok: true, db: dbStatus });
   } catch (err) {
-    // Fallback response
     res.status(500).json({ ok: false, message: 'Health check failed' });
   }
 });
@@ -92,11 +87,11 @@ app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = process.env.NODE_ENV === 'production' && statusCode >= 500 ? 'Internal server error' : err.message || 'Unknown error';
 
-  // Don't send stack traces in production
-  const errorDetails = process.env.NODE_ENV === 'production' ? {} : {
+  // Stack traces ONLY in explicit development — never leak otherwise
+const errorDetails = process.env.NODE_ENV === 'development' ? {
     error: err.message,
     stack: err.stack,
-  };
+  } : {};
 
   res.status(statusCode).json({
     success: false,
@@ -131,6 +126,7 @@ const start = async () => {
   try {
     await connectDB();
     await seedCouriers();
+    try { await ensureAdminExists(); } catch (e) { console.error('⚠️ ensureAdminExists:', e.message); }
     app.listen(PORT, () => {
       const memory = process.memoryUsage();
       console.log(`🚀 Wear Out API running on port ${PORT}`);

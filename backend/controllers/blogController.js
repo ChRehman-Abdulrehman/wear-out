@@ -14,22 +14,24 @@ const cleanBlogContent = (html) => sanitizeHtml(html, {
     td: ['colSpan', 'rowSpan'],
     th: ['colSpan', 'rowSpan'],
   },
-  allowedSchemes: ['http', 'https', 'data'],
+  allowedSchemes: ['http', 'https'],
 });
 
 // Public: get all published posts
 exports.getBlogs = async (req, res) => {
   try {
     const { category, tag, page = 1, limit = 20 } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit, 10) || 20));
     const filter = { published: true };
     if (category) filter.category = category;
     if (tag) filter.tags = tag;
-    const skip = (Number(page) - 1) * Number(limit);
+    const skip = (pageNum - 1) * limitNum;
     const [blogs, total] = await Promise.all([
-      Blog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)).select('-content'),
+      Blog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum).select('-content'),
       Blog.countDocuments(filter),
     ]);
-    res.json({ blogs, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    res.json({ blogs, total, page: pageNum, pages: Math.ceil(total / limitNum) });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
-// Status array for validation
-const STATUS = ['Order Placed', 'On Delivery', 'Completed', 'Return code', 'Cancelled'];
+// Status array for validation — single source of truth
+const STATUS = ['Order Placed', 'Processing', 'On Delivery', 'Completed', 'Returned', 'Cancelled'];
 
 const orderItemSchema = new mongoose.Schema(
   {
@@ -40,10 +40,9 @@ const orderSchema = new mongoose.Schema(
 );
 
 // Composite indexes for common admin/seller queries
-orderSchema.index({ shopkeeper: 1, status: 1, createdAt: -1 });
+orderSchema.index({ status: 1, createdAt: -1 });
 orderSchema.index({ 'customer.whatsapp': 1, createdAt: -1 });
 orderSchema.index({ 'customer.email': 1, createdAt: -1 });
-orderSchema.index({ reference: 1 });
 
 // Virtual for item count
 orderSchema.virtual('itemCount').get(function () {

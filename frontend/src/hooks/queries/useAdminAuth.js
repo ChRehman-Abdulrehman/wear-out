@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../api';
+import { api } from '../../api';
 
 export function useAdminAuth() {
   const { data: token, ...rest } = localStorage.getItem('wearout_admin_token')

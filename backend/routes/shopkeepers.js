@@ -9,6 +9,7 @@ const { authLimiter } = require('../middleware/rateLimiter');
 // Public
 router.post(
   '/signup',
+  authLimiter,
   [
     body('shopName').isString().trim().notEmpty(),
     body('ownerName').isString().trim().notEmpty(),

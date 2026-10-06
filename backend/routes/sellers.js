@@ -12,13 +12,14 @@ router.use(shopkeeperProtect);
 // Products - shopkeeper's own only
 router.get('/products', async (req, res) => {
   try {
-    const { page = 1, limit = 50 } = req.query;
-    const skip = (Number(page) - 1) * Number(limit);
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
+    const skip = (page - 1) * limit;
     const [products, total] = await Promise.all([
-      Product.find({ shopkeeper: req.shopkeeper._id }).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Product.find({ shopkeeper: req.shopkeeper._id }).sort({ createdAt: -1 }).skip(skip).limit(limit),
       Product.countDocuments({ shopkeeper: req.shopkeeper._id }),
     ]);
-    res.json({ products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    res.json({ products, total, page, pages: Math.ceil(total / limit) });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -113,16 +114,23 @@ router.delete('/products/:id', async (req, res) => {
 // Orders - only orders containing this shopkeeper's products
 router.get('/orders', async (req, res) => {
   try {
-    const { page = 1, limit = 50 } = req.query;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
     const myProducts = await Product.find({ shopkeeper: req.shopkeeper._id }).select('_id');
     const myProductIds = myProducts.map((p) => p._id);
     const filter = { 'items.product': { $in: myProductIds } };
-    const skip = (Number(page) - 1) * Number(limit);
+    const skip = (page - 1) * limit;
     const [orders, total] = await Promise.all([
-      Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
       Order.countDocuments(filter),
     ]);
-    res.json({ orders, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    // Only return items belonging to this seller + customer contact (minimal PII)
+    const safeOrders = orders.map((o) => {
+      const obj = o.toObject();
+      obj.items = obj.items.filter((it) => myProductIds.some((id) => id.toString() === it.product.toString()));
+      return obj;
+    });
+    res.json({ orders: safeOrders, total, page, pages: Math.ceil(total / limit) });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -137,6 +145,13 @@ router.put('/orders/:id/status', async (req, res) => {
     }
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: 'Order not found' });
+    // Ownership check: order must contain at least one of this seller's products
+    const myProducts = await Product.find({ shopkeeper: req.shopkeeper._id }).select('_id');
+    const myProductIds = myProducts.map((p) => p._id.toString());
+    const hasOwnProduct = order.items.some((it) => myProductIds.includes(it.product.toString()));
+    if (!hasOwnProduct) {
+      return res.status(403).json({ message: 'Not authorized to update this order' });
+    }
     order.status = status;
     if (status === 'Completed' && !order.deliveredAt) order.deliveredAt = new Date();
     await order.save();

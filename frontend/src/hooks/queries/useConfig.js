@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getConfig } from '../api';
+import { getConfig } from '../../api';
 
 export function useConfig() {
   return useQuery({

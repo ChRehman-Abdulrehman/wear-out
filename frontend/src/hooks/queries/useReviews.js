@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { getApprovedReviews, getProductRating } from '../api';
+import { api } from '../../api';
 
 export function useApprovedReviews(productId) {
   return useQuery({
     queryKey: ['reviews', productId],
-    queryFn: () => getApprovedReviews(productId),
+    queryFn: () => api.getApprovedReviews(productId),
     staleTime: 30000,
     refetchOnWindowFocus: false,
   });
@@ -13,7 +13,7 @@ export function useApprovedReviews(productId) {
 export function useProductRating(productId) {
   return useQuery({
     queryKey: ['rating', productId],
-    queryFn: () => getProductRating(productId),
+    queryFn: () => api.getProductRating(productId),
     staleTime: 180000,
     refetchOnWindowFocus: false,
   });

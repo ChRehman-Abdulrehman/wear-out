@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../api';
 
-const STATUSES = ['Order Placed', 'On Delivery', 'Completed', 'Returned', 'Cancelled'];
+const STATUSES = ['Order Placed', 'Processing', 'On Delivery', 'Completed', 'Returned', 'Cancelled'];
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -37,7 +38,7 @@ export default function Orders() {
       setCopied(o._id);
       setTimeout(() => setCopied(''), 1500);
     } catch {
-      alert('Clipboard not available');
+      toast.error('Clipboard not available');
     }
   };
 

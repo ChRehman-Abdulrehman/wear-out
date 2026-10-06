@@ -6,6 +6,7 @@ import SEO from '../components/SEO';
 import api from '../api';
 import { useConfig } from '../context/ConfigContext';
 import { CATEGORIES } from '../categories';
+import FeaturedCarousel from '../components/FeaturedCarousel';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -101,11 +102,7 @@ export default function Home() {
         ) : products.length === 0 ? (
           <p className="text-slate-400">No products yet — check back soon.</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {products.map((p) => (
-              <ProductCard key={p._id} product={p} />
-            ))}
-          </div>
+          <FeaturedCarousel products={products} />
         )}
       </section>
 

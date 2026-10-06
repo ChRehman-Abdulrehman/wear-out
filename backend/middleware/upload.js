@@ -11,9 +11,10 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-  if (allowed.includes(file.mimetype)) cb(null, true);
-  else cb(new Error('Only image files are allowed'), false);
+  const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  const allowedExt = /\.(jpe?g|png|webp|gif)$/i;
+  if (allowedMimes.includes(file.mimetype) && allowedExt.test(file.originalname || '')) cb(null, true);
+  else cb(new Error('Only image files (jpg, png, webp, gif) are allowed'), false);
 };
 
 const upload = multer({

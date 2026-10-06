@@ -35,13 +35,9 @@ const productSchema = new mongoose.Schema(
 // Composite indexes for most common query patterns
 productSchema.index({ category: 1, gender: 1, featured: 1, status: 1, createdAt: -1 });
 productSchema.index({ shopkeeper: 1, status: 1, featured: 1 });
-productSchema.index({ name: 'text', description: 'text' }); // Text search index
 
-// Single product by ID (always use _id index)
-productSchema.index({ _id: 1 });
-
-// Text search metadata index (for better relevance)
-productSchema.index({ name: 'text', description: 'text', category: 1 });
+// Text search index (single text index — MongoDB allows one per collection)
+productSchema.index({ name: 'text', description: 'text', category: 'text' });
 
 // Virtual for safe JSON output (exclude internal fields)
 productSchema.virtual('safeImage').get(function () {

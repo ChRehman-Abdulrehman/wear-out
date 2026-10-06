@@ -6,7 +6,10 @@ const protect = (req, res, next) => {
     const token = header.startsWith('Bearer ') ? header.slice(7) : null;
     if (!token) return res.status(401).json({ message: 'Not authorized' });
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.admin = { id: decoded.id, email: decoded.email };
+    if (decoded.role !== 'admin') {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    req.admin = { id: decoded.id, email: decoded.email, role: decoded.role };
     next();
   } catch (err) {
     return res.status(401).json({ message: 'Not authorized' });

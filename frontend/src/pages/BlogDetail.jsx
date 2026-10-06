@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import SEO from '../components/SEO';
 import api from '../api';
 import { imgUrl } from '../lib/img';
@@ -87,7 +88,7 @@ export default function BlogDetail() {
           prose-strong:text-ink
           prose-a:text-gold prose-a:no-underline hover:prose-a:underline
           prose-img:rounded-lg prose-img:w-full prose-img:my-6 prose-img:shadow-sm"
-        dangerouslySetInnerHTML={{ __html: blog.content }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content || '') }}
       />
     </div>
   );

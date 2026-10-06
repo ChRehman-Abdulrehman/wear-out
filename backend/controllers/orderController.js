@@ -1,5 +1,5 @@
 const Order = require('../models/Order');
-const Product = require('../models/Order');
+const Product = require('../models/Product');
 const { addOrderConfirmationJob } = require('../queues/orderQueue');
 
 const buildReference = () => 'WO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
@@ -40,7 +40,7 @@ exports.createOrder = async (req, res) => {
       return res.status(400).json({ message: 'Valid email address is required' });
     }
 
-    // Resolve product snapshots + validate stock/size + decrement stock
+    // Validate all items first (no stock changes yet)
     const resolvedItems = [];
     let total = 0;
     for (const it of items) {
@@ -49,9 +49,9 @@ exports.createOrder = async (req, res) => {
       if (!product.sizes.includes(it.size)) {
         return res.status(400).json({ message: `Size ${it.size} not available for ${product.name}` });
       }
-      const qty = Math.max(1, parseInt(it.quantity, 10) || 1);
-      if (product.stock > 0 && product.stock < qty) {
-        return res.status(400).json({ message: `Only ${product.stock} left in stock for ${product.name}` });
+      const qty = Math.max(1, Math.min(100, parseInt(it.quantity, 10) || 1));
+      if (product.stock < qty) {
+        return res.status(400).json({ message: `Insufficient stock for ${product.name} (${product.stock} left)` });
       }
       resolvedItems.push({
         product: product._id,
@@ -65,24 +65,44 @@ exports.createOrder = async (req, res) => {
       total += product.price * qty;
     }
 
-    // Atomic stock decrement with $inc guard
+    // Aggregate duplicate items to prevent double-decrement bypass
+    const aggregated = {};
     for (const it of resolvedItems) {
+      const key = `${it.product}-${it.size}-${it.shoeSize}`;
+      if (aggregated[key]) {
+        aggregated[key].quantity += it.quantity;
+      } else {
+        aggregated[key] = { ...it };
+      }
+    }
+    const aggItems = Object.values(aggregated);
+
+    // Atomic stock decrement for ALL items with rollback on failure
+    const decremented = [];
+    for (const it of aggItems) {
       const updated = await Product.findOneAndUpdate(
         { _id: it.product, stock: { $gte: it.quantity } },
-        { $inc: { stock: -it.quantity }, $set: { inStock: true } },
+        { $inc: { stock: -it.quantity } },
         { new: true }
       );
       if (!updated) {
+        // Rollback: restore all previously decremented items
+        for (const done of decremented) {
+          await Product.updateOne({ _id: done.product }, { $inc: { stock: done.quantity } });
+        }
         return res.status(400).json({ message: `Insufficient stock for ${it.name}` });
       }
-      // Update inStock based on new stock value
+      decremented.push(it);
+      // Update inStock flag
       if (updated.stock <= 0) {
-        updated.inStock = false;
-        await updated.save();
+        await Product.updateOne({ _id: it.product }, { $set: { inStock: false } });
+      } else if (!updated.inStock) {
+        await Product.updateOne({ _id: it.product }, { $set: { inStock: true } });
       }
     }
 
-    const delivery = Number(deliveryCharge) || 0;
+    // Server-side delivery charge (ignore client value)
+    const delivery = Number(process.env.DELIVERY_CHARGE) || 200;
     const reference = await generateUniqueReference();
     const order = new Order({
       customer: {
@@ -92,17 +112,27 @@ exports.createOrder = async (req, res) => {
         address: customer.address,
         whatsapp: customer.whatsapp,
         email: customer.email,
-        gender: customer.gender,
+        gender: customer.gender || 'Male',
       },
-      items: resolvedItems,
+      items: aggItems,
       totalAmount: total,
       deliveryCharge: delivery,
       status: 'Order Placed',
       reference,
     });
-    await order.save();
-    // Add order confirmation to background queue
-    await addOrderConfirmationJob(order._id);
+
+    try {
+      await order.save();
+    } catch (saveErr) {
+      // Rollback stock if order save fails
+      for (const done of decremented) {
+        await Product.updateOne({ _id: done.product }, { $inc: { stock: done.quantity } });
+      }
+      return res.status(400).json({ message: saveErr.message || 'Order validation failed' });
+    }
+
+    // Add order confirmation to background queue (graceful if Redis unavailable)
+    try { await addOrderConfirmationJob(order._id); } catch (e) { /* queue optional */ }
     res.status(201).json({ message: 'Order placed successfully', order });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -112,6 +142,8 @@ exports.createOrder = async (req, res) => {
 exports.getOrders = async (req, res) => {
   try {
     const { month, year, status, page = 1, limit = 50 } = req.query;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 50));
     const filter = {};
     if (status) filter.status = status;
     if (month && year) {
@@ -121,12 +153,12 @@ exports.getOrders = async (req, res) => {
       const end = new Date(y, m + 1, 1);
       filter.createdAt = { $gte: start, $lt: end };
     }
-    const skip = (Number(page) - 1) * Number(limit);
+    const skip = (pageNum - 1) * limitNum;
     const [orders, total] = await Promise.all([
-      Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      Order.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
       Order.countDocuments(filter),
     ]);
-    res.json({ orders, total, page: Number(page), pages: Math.ceil(total / Number(limit)) });
+    res.json({ orders, total, page: pageNum, pages: Math.ceil(total / limitNum) });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }

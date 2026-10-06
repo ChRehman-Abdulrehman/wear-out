@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import api from '../api';
 import { imgUrl } from '../lib/img';
@@ -67,6 +68,11 @@ export default function Checkout() {
     return Object.keys(e).length === 0;
   };
 
+  // Allow control/navigation keys, block only unwanted character keys
+  const isControlKey = (e) =>
+    ['Backspace', 'Delete', 'Tab', 'Enter', 'Escape', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'Control', 'Shift', 'Alt', 'Meta', 'CapsLock'].includes(e.key) ||
+    e.ctrlKey || e.altKey || e.metaKey;
+
   const onPlaceOrder = (ev) => {
     ev.preventDefault();
     if (!validate()) return;
@@ -100,7 +106,7 @@ export default function Checkout() {
       setDone(true);
       if (!isBuyNow) clear();
     } catch (err) {
-      alert('Order failed: ' + (err?.response?.data?.message || 'Please try again.'));
+      toast.error('Order failed: ' + (err?.response?.data?.message || 'Please try again.'));
     } finally {
       setSubmitting(false);
     }
@@ -136,7 +142,7 @@ export default function Checkout() {
               <label className="text-sm text-slate-600">Full Name *</label>
               <input className="input-field" value={form.fullName}
                 placeholder="e.g. Ahmed Khan"
-                onKeyDown={(e) => { if (/[0-9]/.test(e.key) || /[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key)) e.preventDefault(); }}
+                onKeyDown={(e) => { if (!isControlKey(e) && (/[0-9]/.test(e.key) || /[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key))) e.preventDefault(); }}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} />
               {errors.fullName && <p className="text-red-400 text-xs mt-1">{errors.fullName}</p>}
             </div>
@@ -144,7 +150,7 @@ export default function Checkout() {
               <label className="text-sm text-slate-600">Age *</label>
               <input type="number" min="1" max="120" className="input-field" value={form.age}
                 placeholder="e.g. 25"
-                onKeyDown={(e) => { if (e.key === '-' || e.key === '+' || e.key === '.' || e.key === 'e') e.preventDefault(); }}
+                onKeyDown={(e) => { if (!isControlKey(e) && (e.key === '-' || e.key === '+' || e.key === '.' || e.key === 'e')) e.preventDefault(); }}
                 onChange={(e) => { const v = e.target.value.replace(/[^0-9]/g, ''); setForm({ ...form, age: v }); }} />
               {errors.age && <p className="text-red-400 text-xs mt-1">{errors.age}</p>}
             </div>
@@ -152,7 +158,7 @@ export default function Checkout() {
               <label className="text-sm text-slate-600">City *</label>
               <input className="input-field" value={form.city}
                 placeholder="e.g. Lahore"
-                onKeyDown={(e) => { if (/[0-9]/.test(e.key) || /[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key)) e.preventDefault(); }}
+                onKeyDown={(e) => { if (!isControlKey(e) && (/[0-9]/.test(e.key) || /[!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key))) e.preventDefault(); }}
                 onChange={(e) => setForm({ ...form, city: e.target.value.replace(/[^a-zA-Z\s]/g, '') })} />
               {errors.city && <p className="text-red-400 text-xs mt-1">{errors.city}</p>}
             </div>
@@ -160,7 +166,8 @@ export default function Checkout() {
               <label className="text-sm text-slate-600">WhatsApp Number *</label>
               <input className="input-field" value={form.whatsapp}
                 placeholder="+923001234567"
-                onKeyDown={(e) => { if (/[a-zA-Z!@#$%^&*()_+=\[\]{};':"\\|,.<>/?`~]/.test(e.key)) e.preventDefault(); }}
+                inputMode="tel"
+                onKeyDown={(e) => { if (!isControlKey(e) && e.key !== '+' && !/[0-9]/.test(e.key)) e.preventDefault(); }}
                 onChange={(e) => setForm({ ...form, whatsapp: e.target.value.replace(/[^0-9+]/g, '') })} />
               {errors.whatsapp && <p className="text-red-400 text-xs mt-1">{errors.whatsapp}</p>}
             </div>
@@ -185,7 +192,7 @@ export default function Checkout() {
             <label className="text-sm text-slate-600">Full Address *</label>
             <textarea className="input-field min-h-[80px]" value={form.address}
               placeholder="House #, Street, Area, City"
-              onKeyDown={(e) => { if (/[!@#$%^&*()_+=\[\]{};':"\\|<>?`~]/.test(e.key)) e.preventDefault(); }}
+              onKeyDown={(e) => { if (!isControlKey(e) && e.key !== '-' && e.key !== '#' && e.key !== '/' && e.key !== '.' && e.key !== ',' && !/[a-zA-Z0-9\s]/.test(e.key)) e.preventDefault(); }}
               onChange={(e) => setForm({ ...form, address: e.target.value.replace(/[^a-zA-Z0-9\s,.\-#/]/g, '') })} />
             {errors.address && <p className="text-red-400 text-xs mt-1">{errors.address}</p>}
           </div>

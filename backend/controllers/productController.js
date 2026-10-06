@@ -5,7 +5,9 @@ const { getOrSet, invalidate } = require('../services/cache.service');
 exports.getProducts = async (req, res) => {
   try {
     const { category, featured, search, gender, page = 1, limit = 50 } = req.query;
-    const cacheKey = `products:list:${category || 'all'}:${gender || 'all'}:${page}:${limit}`;
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 50));
+    const cacheKey = `products:list:${category || 'all'}:${gender || 'all'}:${pageNum}:${limitNum}`;
 
     const fetchProducts = async () => {
       const filter = {};
@@ -17,12 +19,12 @@ exports.getProducts = async (req, res) => {
         const re = new RegExp(escaped, 'i');
         filter.$or = [{ name: re }, { description: re }, { category: re }];
       }
-      const skip = (Number(page) - 1) * Number(limit);
+      const skip = (pageNum - 1) * limitNum;
       const [products, total] = await Promise.all([
-        Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+        Product.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum).select('-shopkeeper -featuredPending'),
         Product.countDocuments(filter),
       ]);
-      return { products, total, page: Number(page), pages: Math.ceil(total / Number(limit)) };
+      return { products, total, page: pageNum, pages: Math.ceil(total / limitNum) };
     };
 
     const result = await getOrSet(cacheKey, 60, fetchProducts);
@@ -37,7 +39,7 @@ exports.getProduct = async (req, res) => {
     const cacheKey = `product:${req.params.id}`;
 
     const fetchProduct = async () => {
-      const product = await Product.findById(req.params.id);
+      const product = await Product.findById(req.params.id).select('-shopkeeper -featuredPending');
       if (!product) return res.status(404).json({ message: 'Product not found' });
       return product;
     };
@@ -168,7 +170,7 @@ exports.getFeaturedProducts = async (req, res) => {
     const cacheKey = 'products:featured';
 
     const fetchFeatured = async () => {
-      const products = await Product.find({ featured: true }).sort({ createdAt: -1 }).limit(20);
+      const products = await Product.find({ featured: true }).sort({ createdAt: -1 }).limit(20).select('-shopkeeper -featuredPending');
       return products;
     };
 

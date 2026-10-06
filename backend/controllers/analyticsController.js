@@ -10,6 +10,7 @@ function toCategory(status) {
     case 'Completed':
       return 'Completed';
     case 'Order Placed':
+    case 'Processing':
     case 'On Delivery':
       return 'On Delivery';
     case 'Returned':

@@ -16,25 +16,18 @@ import FAQ from './pages/FAQ';
 import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
 import NotFound from './pages/NotFound';
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminLayout from './pages/admin/AdminLayout';
-import Dashboard from './pages/admin/Dashboard';
-import Products from './pages/admin/Products';
-import Orders from './pages/admin/Orders';
-import BlogManager from './pages/admin/BlogManager';
-import SellerLogin from './pages/seller/SellerLogin';
-import SellerSignup from './pages/seller/SellerSignup';
-import ShopkeeperLayout from './pages/seller/ShopkeeperLayout';
-import ShopkeeperDashboard from './pages/seller/ShopkeeperDashboard';
-import ShopkeeperProducts from './pages/seller/ShopkeeperProducts';
-import ShopkeeperOrders from './pages/seller/ShopkeeperOrders';
-import ShopkeeperCustomers from './pages/seller/ShopkeeperCustomers';
 import { CartProvider } from './context/CartContext';
 import { AdminAuthProvider } from './context/AdminAuth';
 import { ConfigProvider } from './context/ConfigContext';
 import store from './store';
 import { Provider } from 'react-redux';
 
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
+const Products = lazy(() => import('./pages/admin/Products'));
+const Orders = lazy(() => import('./pages/admin/Orders'));
+const BlogManager = lazy(() => import('./pages/admin/BlogManager'));
 const Customers = lazy(() => import('./pages/admin/Customers'));
 const ReviewsModeration = lazy(() => import('./pages/admin/ReviewsModeration'));
 const Shopkeepers = lazy(() => import('./pages/admin/Shopkeepers'));
@@ -42,9 +35,20 @@ const FeaturedRequests = lazy(() => import('./pages/admin/FeaturedRequests'));
 const CourierHub = lazy(() => import('./pages/admin/CourierHub'));
 const Logistics = lazy(() => import('./pages/admin/Logistics'));
 const Analytics = lazy(() => import('./pages/admin/Analytics'));
+const SellerLogin = lazy(() => import('./pages/seller/SellerLogin'));
+const SellerSignup = lazy(() => import('./pages/seller/SellerSignup'));
+const ShopkeeperLayout = lazy(() => import('./pages/seller/ShopkeeperLayout'));
+const ShopkeeperDashboard = lazy(() => import('./pages/seller/ShopkeeperDashboard'));
+const ShopkeeperProducts = lazy(() => import('./pages/seller/ShopkeeperProducts'));
+const ShopkeeperOrders = lazy(() => import('./pages/seller/ShopkeeperOrders'));
+const ShopkeeperCustomers = lazy(() => import('./pages/seller/ShopkeeperCustomers'));
 
 function AdminFallback() {
   return <div className="p-6 text-slate-400">Loading…</div>;
+}
+
+function Suspended({ children }) {
+  return <Suspense fallback={<AdminFallback />}>{children}</Suspense>;
 }
 
 export default function App() {
@@ -77,17 +81,17 @@ export default function App() {
                   <Route path="/blog/:slug" element={<BlogDetail />} />
                 </Route>
 
-                <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/seller/login" element={<SellerLogin />} />
-                <Route path="/seller/signup" element={<SellerSignup />} />
-                <Route path="/seller" element={<ShopkeeperLayout />}>
+                <Route path="/admin/login" element={<Suspended><AdminLogin /></Suspended>} />
+                <Route path="/seller/login" element={<Suspended><SellerLogin /></Suspended>} />
+                <Route path="/seller/signup" element={<Suspended><SellerSignup /></Suspended>} />
+                <Route path="/seller" element={<Suspended><ShopkeeperLayout /></Suspended>}>
                   <Route index element={<ShopkeeperDashboard />} />
                   <Route path="products" element={<ShopkeeperProducts />} />
                   <Route path="orders" element={<ShopkeeperOrders />} />
                   <Route path="customers" element={<ShopkeeperCustomers />} />
                 </Route>
                 <Route path="/admin" element={<ProtectedRoute />}>
-                  <Route element={<AdminLayout />}>
+                  <Route element={<Suspended><AdminLayout /></Suspended>}>
                     <Route index element={<Dashboard />} />
                     <Route path="products" element={<Products />} />
                     <Route path="orders" element={<Orders />} />

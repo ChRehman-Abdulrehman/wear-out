@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import api from '../../api';
 
-const STATUSES = ['Pending', 'Confirmed', 'On Delivery', 'Completed', 'Returned', 'Cancelled'];
+const STATUSES = ['Order Placed', 'Processing', 'On Delivery', 'Completed', 'Returned', 'Cancelled'];
 
 export default function ShopkeeperOrders() {
   const [orders, setOrders] = useState([]);
@@ -23,7 +24,7 @@ export default function ShopkeeperOrders() {
     const c = o.customer || {};
     const shoeSizes = o.items?.filter((it) => it.shoeSize).map((it) => `US ${it.shoeSize}`).join(', ');
     const text = `Name: ${c.fullName || ''}\nPhone: ${c.whatsapp || ''}\nEmail: ${c.email || ''}\nCity: ${c.city || ''}\nAddress: ${c.address || ''}${shoeSizes ? `\nFoot Size: ${shoeSizes}` : ''}`;
-    navigator.clipboard.writeText(text).then(() => alert('Customer data copied!'));
+    navigator.clipboard.writeText(text).then(() => toast.success('Customer data copied!'));
   };
 
   if (loading) return <p className="text-slate-400">Loading orders…</p>;

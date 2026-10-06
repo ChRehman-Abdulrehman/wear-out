@@ -1,17 +1,34 @@
 const sanitizeHtml = require('sanitize-html');
 const Review = require('../models/Review');
+const Order = require('../models/Order');
 
 const clean = (str) => sanitizeHtml(str || '', { allowedTags: [], allowedAttributes: {} });
 
 exports.submitReview = async (req, res) => {
   try {
-    const { product, rating, comment, author } = req.body;
+    const { product, rating, comment, author, reference, email } = req.body;
+
+    // Optional purchase verification: if order reference given, verify it contains this product
+    let verified = false;
+    if (reference && String(reference).trim()) {
+      const order = await Order.findOne({ reference: String(reference).trim().toUpperCase() });
+      if (order && order.items.some((it) => it.product.toString() === product)) {
+        if (!email || order.customer.email.toLowerCase() === String(email).toLowerCase()) {
+          verified = true;
+        }
+      }
+      if (!verified) {
+        return res.status(400).json({ message: 'Order reference could not be verified for this product' });
+      }
+    }
+
     const review = new Review({
       product,
       rating: Number(rating),
       comment: clean(comment),
       author: clean(author) || 'Anonymous',
       status: 'Pending',
+      verified,
     });
     await review.save();
     res.status(201).json({ message: 'Review submitted and awaiting approval', review });

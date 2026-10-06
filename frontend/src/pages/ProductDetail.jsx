@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import api from '../api';
 import { useCart } from '../context/CartContext';
 import ReviewSection from '../components/ReviewSection';
@@ -53,7 +54,7 @@ export default function ProductDetail() {
     if (isShoes && !shoeSize) return setError('Please select your foot size (8-12).');
     addItem(product, size, qty, isShoes ? shoeSize : undefined);
     setError('');
-    alert('Added to cart!');
+    toast.success('Added to cart!');
   };
 
   const handleBuyNow = () => {
