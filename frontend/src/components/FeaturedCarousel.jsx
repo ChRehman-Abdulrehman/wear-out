@@ -74,8 +74,11 @@ export default function FeaturedCarousel({ products = [] }) {
                 <p className="text-sm font-medium text-slate-700 truncate">
                   {product.name}
                 </p>
-                <p className="mt-1 text-sm font-bold text-gold">
-                  {product.price?.toLocaleString()} PKR
+                <p className="mt-1 flex items-center gap-2 text-sm font-bold text-gold justify-center">
+                  <span>Rs {(product.salePrice > 0 && product.salePrice < product.price ? product.salePrice : product.price)?.toLocaleString()}</span>
+                  {product.salePrice > 0 && product.salePrice < product.price && (
+                    <span className="text-xs text-slate-400 line-through font-normal">Rs {product.price?.toLocaleString()}</span>
+                  )}
                 </p>
               </div>
             </Link>

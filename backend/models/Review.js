@@ -8,6 +8,7 @@ const reviewSchema = new mongoose.Schema(
     comment: { type: String, required: true, maxlength: 1000 },
     status: { type: String, enum: ['Pending', 'Approved', 'Rejected'], default: 'Pending' },
     verified: { type: Boolean, default: false },
+    photos: { type: [String], default: [] },
   },
   { timestamps: true }
 );

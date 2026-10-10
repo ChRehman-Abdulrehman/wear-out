@@ -30,11 +30,15 @@ const orderSchema = new mongoose.Schema(
     },
     items: { type: [orderItemSchema], required: true },
     totalAmount: { type: Number, required: true, min: 0 },
+    coupon: {
+      code: { type: String, default: '', uppercase: true, trim: true },
+      discount: { type: Number, default: 0, min: 0 },
+    },
     deliveryCharge: { type: Number, default: 0, min: 0 },
     status: { type: String, enum: STATUS, default: 'Order Placed' },
     courier: { type: String, default: '', trim: true },
     deliveredAt: { type: Date },
-    reference: { type: String, unique: true, sparse: true, lowercase: true },
+    reference: { type: String, unique: true, sparse: true, uppercase: true },
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );

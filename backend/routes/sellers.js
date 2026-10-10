@@ -76,14 +76,15 @@ router.put('/products/:id', upload.array('images', 10), async (req, res) => {
     if (category !== undefined) product.category = category;
     if (gender !== undefined) product.gender = gender;
     if (stock !== undefined) {
-      product.stock = Number(stock);
-      product.inStock = product.stock > 0;
+      const s = Number(stock);
+      product.stock = Number.isFinite(s) && s >= 0 ? s : 0;
+      if (product.stock > 0) product.inStock = true;
     }
     if (sizes !== undefined) {
       let parsed = typeof sizes === 'string' ? sizes.split(',').map((s) => s.trim()).filter(Boolean) : sizes;
       if (parsed.length) product.sizes = parsed;
     }
-    if (inStock !== undefined && stock === undefined) product.inStock = inStock === 'false' || inStock === false ? false : true;
+    if (inStock !== undefined) product.inStock = inStock === 'false' || inStock === false ? false : true;
     if (req.files && req.files.length > 0) {
       const uploads = await Promise.all(req.files.map((f) => uploadToCloudinary(f)));
       const newImages = uploads.map((r) => r.secure_url);

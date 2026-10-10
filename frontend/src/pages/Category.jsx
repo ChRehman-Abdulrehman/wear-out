@@ -4,6 +4,7 @@ import ProductCard from '../components/ProductCard';
 import SEO from '../components/SEO';
 import api from '../api';
 import { categoryBySlug, CATEGORIES } from '../categories';
+import { pricing } from '../lib/pricing';
 
 const CATEGORY_KEYWORDS = {
   Shirts: 'buy shirts Pakistan, premium shirts online, oversized shirts, streetwear shirts Pakistan, cotton shirts, Wear Out shirts, men shirts Pakistan, women shirts Pakistan',
@@ -60,7 +61,7 @@ export default function Category() {
               name: p.name,
               offers: {
                 '@type': 'Offer',
-                price: p.price,
+                price: pricing(p).current,
                 priceCurrency: 'PKR',
                 availability: p.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
               },

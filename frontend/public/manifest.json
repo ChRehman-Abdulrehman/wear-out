@@ -1,0 +1,12 @@
+{
+  "name": "Wear Out — Premium Streetwear Pakistan",
+  "short_name": "Wear Out",
+  "description": "Pakistan's boldest streetwear brand. COD across Pakistan.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#c9a24b",
+  "icons": [
+    { "src": "/wo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -43,6 +43,7 @@ sellerClient.interceptors.response.use(
 export const api = {
   // public config
   getConfig: () => client.get('/admin/config').then((r) => r.data),
+  getPublicSettings: () => client.get('/settings').then((r) => r.data),
 
   // products
   getProducts: (params = {}) => client.get('/products', { params }).then((r) => r.data),
@@ -50,6 +51,35 @@ export const api = {
 
   // orders
   createOrder: (payload) => client.post('/orders', payload).then((r) => r.data),
+  getOrder: (id) => client.get(`/orders/${id}`).then((r) => r.data),
+
+  // coupons
+  validateCoupon: (code, subtotal) => client.post('/coupons/validate', { code, subtotal }).then((r) => r.data),
+  getCoupons: () => client.get('/coupons').then((r) => r.data),
+  createCoupon: (data) => client.post('/coupons', data).then((r) => r.data),
+  updateCoupon: (id, data) => client.put(`/coupons/${id}`, data).then((r) => r.data),
+  deleteCoupon: (id) => client.delete(`/coupons/${id}`).then((r) => r.data),
+
+  // order tracking (public)
+  trackOrder: (payload) => client.post('/orders/track', payload).then((r) => r.data),
+
+  // notify me (public) + admin
+  notifyRequest: (payload) => client.post('/notify', payload).then((r) => r.data),
+  adminGetNotify: () => client.get('/notify/admin').then((r) => r.data),
+
+  // returns/exchanges (public) + admin
+  createReturn: (payload) => client.post('/returns', payload).then((r) => r.data),
+  adminGetReturns: () => client.get('/returns/admin').then((r) => r.data),
+  adminUpdateReturn: (id, data) => client.put(`/returns/admin/${id}`, data).then((r) => r.data),
+
+  // newsletter
+  newsletterSubscribe: (email) => client.post('/newsletter', { email }).then((r) => r.data),
+  adminGetNewsletter: () => client.get('/newsletter/admin').then((r) => r.data),
+
+  // store settings
+  getSettings: () => client.get('/settings').then((r) => r.data),
+  adminGetSettings: () => client.get('/settings/admin').then((r) => r.data),
+  adminSaveSettings: (data) => client.put('/settings/admin', data).then((r) => r.data),
 
   // reviews
   submitReview: (payload) => client.post('/reviews', payload).then((r) => r.data),

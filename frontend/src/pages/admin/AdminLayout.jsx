@@ -6,6 +6,7 @@ const links = [
   { to: '/admin', label: 'Dashboard', end: true },
   { to: '/admin/products', label: 'Products' },
   { to: '/admin/orders', label: 'Orders' },
+  { to: '/admin/coupons', label: 'Coupons' },
   { to: '/admin/blog', label: 'Blog' },
   { to: '/admin/customers', label: 'Customers' },
   { to: '/admin/reviews', label: 'Reviews' },
@@ -14,6 +15,7 @@ const links = [
   { to: '/admin/courier', label: 'Courier Hub' },
   { to: '/admin/logistics', label: 'Logistics AI' },
   { to: '/admin/analytics', label: 'Analytics' },
+  { to: '/admin/requests', label: 'Requests' },
 ];
 
 export default function AdminLayout() {

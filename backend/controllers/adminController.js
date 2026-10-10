@@ -34,6 +34,15 @@ exports.me = async (req, res) => {
 
 // Public, safe config consumed by the frontend (no secrets).
 exports.getPublicConfig = async (req, res) => {
+  let deliveryCharge = Number(process.env.DELIVERY_CHARGE || 0);
+  let freeShippingThreshold = 0;
+  try {
+    const Settings = require('../models/Settings');
+    const d = await Settings.get('deliveryCharge', null);
+    const t = await Settings.get('freeShippingThreshold', null);
+    if (d !== null && d !== undefined && Number.isFinite(Number(d))) deliveryCharge = Number(d);
+    if (t !== null && t !== undefined && Number.isFinite(Number(t))) freeShippingThreshold = Number(t);
+  } catch (e) { /* settings optional */ }
   res.json({
     brand: 'Wear Out',
     tagline: 'WEAR YOUR CONFIDENCE',
@@ -44,7 +53,8 @@ exports.getPublicConfig = async (req, res) => {
       instagram: process.env.CONTACT_INSTAGRAM || '',
       whatsappCommunity: process.env.CONTACT_WHATSAPP_COMMUNITY || '',
     },
-    deliveryCharge: Number(process.env.DELIVERY_CHARGE || 0),
+    deliveryCharge,
+    freeShippingThreshold,
     categories: [
       { name: 'Shirts', comingSoon: false },
       { name: 'Trousers', comingSoon: false },

@@ -1,10 +1,13 @@
 import { Link } from 'react-router-dom';
 import StarRating from './StarRating';
 import ProductCarousel from './ProductCarousel';
+import WishlistButton from './WishlistButton';
 import { getProductImages } from '../lib/img';
+import { pricing } from '../lib/pricing';
 
 export default function ProductCard({ product, hideCategory = false }) {
   const images = getProductImages(product);
+  const { price, current, onSale, discountPct } = pricing(product);
 
   return (
     <Link
@@ -13,19 +16,25 @@ export default function ProductCard({ product, hideCategory = false }) {
     >
       <div className="relative aspect-[3/4] overflow-hidden bg-slate-100">
         <ProductCarousel images={images} alt={product.name} className="w-full h-full" />
+        <WishlistButton productId={product._id} className="absolute top-3 right-3 z-10" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-        {!hideCategory && (
+        {onSale && (
+          <span className="absolute top-3 left-3 z-10 text-[10px] font-bold uppercase tracking-wider text-white bg-red-600 border border-red-700 px-2 py-1 rounded shadow">
+            −{discountPct}% OFF
+          </span>
+        )}
+        {!hideCategory && !onSale && (
           <span className="absolute top-3 left-3 text-[10px] uppercase tracking-widest text-gold border border-gold/40 px-2 py-1 rounded pointer-events-none">
             {product.category}
           </span>
         )}
         {product.inStock && (
-          <span className="absolute top-3 right-3 text-[10px] uppercase tracking-wider text-green-700 bg-green-100 border border-green-300 px-2 py-1 rounded pointer-events-none">
+          <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-wider text-green-700 bg-green-100 border border-green-300 px-2 py-1 rounded pointer-events-none">
             In Stock
           </span>
         )}
         {!product.inStock && (
-          <span className="absolute top-3 right-3 text-[10px] uppercase tracking-wider text-red-600 bg-red-100 border border-red-300 px-2 py-1 rounded pointer-events-none">
+          <span className="absolute bottom-3 right-3 text-[10px] uppercase tracking-wider text-red-600 bg-red-100 border border-red-300 px-2 py-1 rounded pointer-events-none">
             Out of Stock
           </span>
         )}
@@ -43,7 +52,12 @@ export default function ProductCard({ product, hideCategory = false }) {
             <span className="text-xs text-slate-400">{Number(product.rating).toFixed(1)}</span>
           </div>
         )}
-        <p className="text-gold font-semibold mt-1">Rs {product.price.toLocaleString()}</p>
+        <div className="mt-1 flex items-baseline gap-2 flex-wrap">
+          <p className="text-gold font-semibold">Rs {current.toLocaleString()}</p>
+          {onSale && (
+            <p className="text-xs text-slate-400 line-through">Rs {price.toLocaleString()}</p>
+          )}
+        </div>
       </div>
     </Link>
   );

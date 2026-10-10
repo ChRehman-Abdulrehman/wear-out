@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useCart } from '../context/CartContext';
 import api from '../api';
 import { imgUrl } from '../lib/img';
+import { pricing } from '../lib/pricing';
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -32,10 +33,29 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const [orderRef, setOrderRef] = useState('');
+  const [couponInput, setCouponInput] = useState('');
+  const [coupon, setCoupon] = useState(null);
+  const [couponMsg, setCouponMsg] = useState('');
+  const [applying, setApplying] = useState(false);
+
+  const subtotal = isBuyNow
+    ? pricing(buyNow.product).current * buyNow.quantity
+    : cartTotal;
 
   useEffect(() => {
     api.getConfig().then(setConfig).catch(() => {});
   }, []);
+
+  // Keep an applied coupon in sync with the current subtotal
+  useEffect(() => {
+    if (!coupon) return;
+    let alive = true;
+    api
+      .validateCoupon(coupon.code, subtotal)
+      .then((r) => { if (alive) setCoupon({ code: r.code, discount: r.discount }); })
+      .catch(() => { if (alive) { setCoupon(null); setCouponInput(''); setCouponMsg(''); } });
+    return () => { alive = false; };
+  }, [subtotal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (done) window.scrollTo({ top: 0, behavior: 'instant' });
@@ -50,9 +70,33 @@ export default function Checkout() {
     );
   }
 
-  const subtotal = isBuyNow
-    ? buyNow.product.price * buyNow.quantity
-    : cartTotal;
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    setApplying(true);
+    setCouponMsg('');
+    try {
+      const r = await api.validateCoupon(code, subtotal);
+      setCoupon({ code: r.code, discount: r.discount });
+      toast.success(`Coupon ${r.code} applied — you save Rs ${r.discount.toLocaleString()}!`);
+    } catch (err) {
+      setCoupon(null);
+      setCouponMsg(err?.response?.data?.message || 'Invalid coupon code');
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCoupon(null);
+    setCouponInput('');
+    setCouponMsg('');
+  };
+
+  const discount = coupon ? coupon.discount : 0;
+  const threshold = Number(config.freeShippingThreshold) || 0;
+  const afterDiscount = Math.max(0, subtotal - discount);
+  const freeShip = threshold > 0 && afterDiscount >= threshold;
 
   const validate = () => {
     const e = {};
@@ -100,6 +144,7 @@ export default function Checkout() {
           shoeSize: it.shoeSize || '',
         })),
         deliveryCharge: config.deliveryCharge,
+        couponCode: coupon ? coupon.code : '',
       };
       const res = await api.createOrder(payload);
       setOrderRef(res.order?.reference || '');
@@ -113,6 +158,12 @@ export default function Checkout() {
   };
 
   if (done) {
+    const waNumber = String(config?.contact?.whatsapp || '').replace(/[^0-9]/g, '');
+    const waHref = waNumber
+      ? `https://wa.me/${waNumber}?text=${encodeURIComponent(
+          `Hi Wear Out! 👋\nI just placed an order.\n• Reference: ${orderRef}\n• Name: ${form.fullName}\n• Amount: Rs ${(Math.max(0, subtotal - discount) + (Number(config.deliveryCharge) || 0)).toLocaleString()}`
+        )}`
+      : null;
     return (
       <div className="max-w-2xl mx-auto px-4 py-20 text-center">
         <div className="text-6xl mb-4">✅</div>
@@ -123,9 +174,19 @@ export default function Checkout() {
         <p className="text-slate-500 mt-2 text-sm">
           Pay the delivery charge in advance; the product is paid on delivery.
         </p>
-        <button className="btn-gold mt-8" onClick={() => navigate('/')}>
-          Back to Home
-        </button>
+        <div className="flex gap-3 justify-center mt-8 flex-wrap">
+          <button className="btn-gold" onClick={() => navigate('/')}>
+            Back to Home
+          </button>
+          <button className="btn-outline" onClick={() => navigate('/track')}>
+            Track Order
+          </button>
+          {waHref && (
+            <a href={waHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md bg-[#25D366] px-6 py-3 text-sm font-semibold uppercase tracking-widest text-white hover:bg-[#1da851] transition-colors">
+              Confirm on WhatsApp
+            </a>
+          )}
+        </div>
       </div>
     );
   }
@@ -216,9 +277,58 @@ export default function Checkout() {
               </div>
             ))}
           </div>
+          {/* Coupon */}
+          <div className="mt-5 pt-4 border-t border-gold/15">
+            <label className="text-sm text-slate-600 block mb-2">Coupon Code</label>
+            {coupon ? (
+              <div className="flex items-center justify-between bg-green-50 border border-green-300 rounded-md px-3 py-2">
+                <span className="text-sm text-green-800">
+                  <span className="font-semibold">{coupon.code}</span> — you save Rs {discount.toLocaleString()}
+                </span>
+                <button type="button" className="text-xs text-red-500 hover:underline ml-2" onClick={removeCoupon}>Remove</button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  className="input-field flex-1 uppercase"
+                  placeholder="e.g. SAVE10"
+                  value={couponInput}
+                  onChange={(e) => { setCouponInput(e.target.value); setCouponMsg(''); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); } }}
+                />
+                <button type="button" className="btn-outline !py-2 px-4" onClick={applyCoupon} disabled={applying}>
+                  {applying ? '…' : 'Apply'}
+                </button>
+              </div>
+            )}
+            {couponMsg && <p className="text-red-500 text-xs mt-1">{couponMsg}</p>}
+          </div>
+
           <div className="border-t border-gold/15 mt-4 pt-3 space-y-1 text-sm text-slate-600">
             <div className="flex justify-between"><span>Subtotal</span><span>Rs {subtotal.toLocaleString()}</span></div>
-            <div className="flex justify-between"><span>Delivery (prepaid)</span><span>Rs {config.deliveryCharge.toLocaleString()}</span></div>
+            {discount > 0 && (
+              <div className="flex justify-between text-green-700 font-medium">
+                <span>Coupon ({coupon.code})</span>
+                <span>− Rs {discount.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span>Delivery (prepaid)</span>
+              {freeShip ? (
+                <span className="text-green-600 font-semibold">FREE 🎉</span>
+              ) : (
+                <span>Rs {(Number(config.deliveryCharge) || 0).toLocaleString()}</span>
+              )}
+            </div>
+            {threshold > 0 && !freeShip && (
+              <p className="text-xs text-gold-dark bg-gold/10 border border-gold/20 rounded px-2 py-1.5">
+                Add Rs {(threshold - afterDiscount).toLocaleString()} more to unlock FREE delivery
+              </p>
+            )}
+            <div className="flex justify-between border-t border-gold/15 pt-2 text-ink font-semibold text-base">
+              <span>Total</span>
+              <span>Rs {(afterDiscount + (freeShip ? 0 : Number(config.deliveryCharge) || 0)).toLocaleString()}</span>
+            </div>
           </div>
         </div>
       </div>

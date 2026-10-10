@@ -5,6 +5,10 @@ const productSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true, maxlength: 200 },
     description: { type: String, default: '', trim: true },
     price: { type: Number, required: true, min: 0, max: 100000 },
+    // Sale pricing — admin controlled (0 = no sale)
+    salePrice: { type: Number, default: 0, min: 0, max: 100000 },
+    saleStart: { type: Date, default: null },
+    saleEnd: { type: Date, default: null },
     sizes: {
       type: [String],
       default: ['S', 'M', 'L', 'XL'],

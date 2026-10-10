@@ -1,18 +1,16 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import ProductCard from '../components/ProductCard';
-import BrandHero from '../components/BrandHero';
 import SEO from '../components/SEO';
 import api from '../api';
 import { useConfig } from '../context/ConfigContext';
 import { CATEGORIES } from '../categories';
-import FeaturedCarousel from '../components/FeaturedCarousel';
+import ProductCard from '../components/ProductCard';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [saleBanner, setSaleBanner] = useState('');
   const config = useConfig();
-  const hasScrolled = useRef(false);
 
   useEffect(() => {
     api
@@ -22,29 +20,8 @@ export default function Home() {
         setProducts(p.slice(0, 20));
       })
       .finally(() => setLoading(false));
+    api.getPublicSettings().then((s) => setSaleBanner(s?.saleBanner || '')).catch(() => {});
   }, []);
-
-  useEffect(() => {
-    if (hasScrolled.current) return;
-    const timer = setTimeout(() => {
-      hasScrolled.current = true;
-      const targetY = window.innerHeight * 0.55;
-      const startY = window.scrollY;
-      const diff = targetY - startY;
-      if (diff <= 0) return;
-      const duration = Math.min(Math.max(diff / 800, 1.2), 2.5);
-      const startTime = performance.now();
-      function step(now) {
-        const elapsed = (now - startTime) / (duration * 1000);
-        if (elapsed >= 1) { window.scrollTo(0, targetY); return; }
-        const ease = 1 - Math.pow(1 - elapsed, 3);
-        window.scrollTo(0, startY + diff * ease);
-        requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [loading]);
 
   const realCats = (config?.categories || []).filter((c) => !c.comingSoon);
 
@@ -54,7 +31,7 @@ export default function Home() {
         title="Premium Streetwear Pakistan"
         description="Wear Out — Pakistan's boldest streetwear brand. Shop premium shirts, trousers, caps, shoes & unstitched fabric. Cash on delivery. Bold fits, clean lines, unapologetic confidence."
         keywords="streetwear Pakistan, premium clothing Pakistan, buy shirts online Pakistan, trousers Pakistan, caps Pakistan, shoes Pakistan, unstitched fabric Pakistan, COD Pakistan, bold fashion Pakistan, urban clothing Pakistan"
-        url="/"
+        url="/home"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'WebPage',
@@ -73,37 +50,48 @@ export default function Home() {
           },
         }}
       />
-      <BrandHero />
 
-      {/* Featured products */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <h2 className="font-display text-4xl sm:text-5xl text-metallic tracking-wider">Featured Collection</h2>
-            <p className="text-slate-500 mt-1">Fresh fits. Wear your confidence.</p>
+      {/* Featured */}
+      <section className="bg-gradient-to-b from-bone via-mist to-mist py-14">
+        <div className="max-w-7xl mx-auto px-4">
+          {saleBanner && (
+            <div className="mb-8 rounded-md border border-gold/40 bg-gold/10 px-4 py-3 text-center text-sm font-semibold uppercase tracking-widest text-gold-dark">
+              🔥 {saleBanner}
+            </div>
+          )}
+          <div className="text-center mb-10">
+            <p className="inline-flex items-center gap-2 rounded-full border border-gold/50 bg-gold/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-gold-dark">
+              <span className="h-1.5 w-1.5 rounded-full bg-gold-dark animate-pulse" />
+              New Season — Streetwear Drops Live
+            </p>
+            <h1 className="mt-4 font-display text-5xl sm:text-6xl md:text-7xl tracking-wide text-metallic">
+              Featured Collection
+            </h1>
+            <span className="mt-3 block h-1 w-24 mx-auto rounded-full bg-gradient-to-r from-gold via-gold-light to-gold" />
+            <Link
+              to="/"
+              className="mt-6 inline-flex items-center gap-2 rounded-md bg-black px-5 py-2.5 text-sm font-semibold uppercase tracking-widest text-gold hover:bg-neutral-800 transition-colors"
+            >
+              Visit Home Page →
+            </Link>
           </div>
-          <Link to="/shirts" className="text-gold text-sm sm:text-base font-semibold uppercase tracking-widest hover:underline">
-            Shop all →
-          </Link>
+
+          {loading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="h-72 rounded-xl bg-slate-200 animate-pulse" />
+              ))}
+            </div>
+          ) : products.length === 0 ? (
+            <p className="text-center text-slate-400">No featured products yet.</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {products.map((p) => (
+                <ProductCard key={p._id} product={p} />
+              ))}
+            </div>
+          )}
         </div>
-
-        {loading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1,2,3,4].map((n) => (
-              <div key={n} className="bg-white border border-gold/20 rounded-xl overflow-hidden animate-pulse">
-                <div className="aspect-[3/4] bg-slate-200" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-slate-200 rounded w-3/4" />
-                  <div className="h-3 bg-slate-200 rounded w-1/2" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : products.length === 0 ? (
-          <p className="text-slate-400">No products yet — check back soon.</p>
-        ) : (
-          <FeaturedCarousel products={products} />
-        )}
       </section>
 
       {/* Categories */}

@@ -27,7 +27,7 @@ export default function BlogDetail() {
       <SEO
         title={blog.title}
         description={blog.metaDescription || blog.excerpt}
-        keywords={`${blog.title}, Wear Out blog, streetwear Pakistan, ${blog.category}`}
+        keywords={`${blog.tags?.join(', ') || ''}, ${blog.title}, Wear Out blog, streetwear Pakistan`}
         image={blog.image}
         url={`/blog/${blog.slug}`}
         type="article"

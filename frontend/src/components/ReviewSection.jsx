@@ -17,8 +17,32 @@ export default function ReviewSection({ productId }) {
   const [reviews, setReviews] = useState([]);
   const [rating, setRating] = useState({ avg: 0, count: 0 });
   const [form, setForm] = useState({ author: '', comment: '', stars: 5 });
+  const [photos, setPhotos] = useState([]);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState('');
+
+  const onPickPhotos = (e) => {
+    const files = Array.from(e.target.files || []).slice(0, 3 - photos.length);
+    files.forEach((f) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const max = 480;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          const data = canvas.toDataURL('image/jpeg', 0.7);
+          setPhotos((p) => (p.length >= 3 ? p : [...p, data]));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(f);
+    });
+    e.target.value = '';
+  };
 
   const load = async () => {
     const r = await api.getApprovedReviews(productId);
@@ -42,9 +66,11 @@ export default function ReviewSection({ productId }) {
         author: form.author,
         rating: form.stars,
         comment: form.comment,
+        photos,
       });
       setMsg('Thanks! Your review is awaiting approval.');
       setForm({ author: '', comment: '', stars: 5 });
+      setPhotos([]);
       await load();
     } catch {
       setMsg('Something went wrong. Please try again.');
@@ -75,6 +101,15 @@ export default function ReviewSection({ productId }) {
                 <Stars value={rv.rating} />
               </div>
               <p className="text-slate-600 text-sm">{rv.comment}</p>
+              {Array.isArray(rv.photos) && rv.photos.length > 0 && (
+                <div className="flex gap-2 mt-3">
+                  {rv.photos.map((ph, i) => (
+                    <a key={i} href={ph} target="_blank" rel="noopener noreferrer">
+                      <img src={ph} alt={`Review photo ${i + 1}`} className="h-16 w-16 rounded-md object-cover border border-gold/20 hover:border-gold" />
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -110,6 +145,21 @@ export default function ReviewSection({ productId }) {
             value={form.comment}
             onChange={(e) => setForm({ ...form, comment: e.target.value })}
           />
+          <div className="flex items-center gap-2 flex-wrap">
+            {photos.map((ph, i) => (
+              <div key={i} className="relative">
+                <img src={ph} alt="" className="h-14 w-14 rounded-md object-cover border border-gold/30" />
+                <button type="button" onClick={() => setPhotos(photos.filter((_, j) => j !== i))}
+                  className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-red-500 text-white text-xs leading-none">×</button>
+              </div>
+            ))}
+            {photos.length < 3 && (
+              <label className="cursor-pointer text-xs border border-dashed border-gold/40 text-slate-500 hover:text-gold hover:border-gold rounded-md px-3 py-3">
+                + Photo
+                <input type="file" accept="image/*" multiple className="hidden" onChange={onPickPhotos} />
+              </label>
+            )}
+          </div>
           <button type="submit" disabled={submitting} className="btn-gold w-full">
             {submitting ? 'Submitting...' : 'Submit Review'}
           </button>

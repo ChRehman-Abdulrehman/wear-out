@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../lib/wishlist';
 import { useConfig } from '../context/ConfigContext';
 import { useAdminAuth } from '../context/AdminAuth';
 import { CATEGORIES } from '../categories';
@@ -17,6 +18,7 @@ const realCategories = [
 
 export default function Navbar() {
   const { count } = useCart();
+  const { count: wishCount } = useWishlist();
   const config = useConfig();
   const { isAuthenticated } = useAdminAuth();
   const [open, setOpen] = useState(false);
@@ -45,22 +47,46 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1.5">
-          {realCategories.map((c) => (
-            <NavLink key={c.name} to={c.to} className={linkClass}>
-              {c.name}
-            </NavLink>
-          ))}
-          <NavLink to="/about" className={linkClass}>
-            About
+          <NavLink to="/" end className={linkClass}>
+            Home Page
           </NavLink>
-          <NavLink to="/contact" className={linkClass}>
-            Contact
-          </NavLink>
+          {realCategories
+            .filter((c) => !['Caps', 'Watches', 'Accessories'].includes(c.name))
+            .map((c) => (
+              <NavLink key={c.name} to={c.to} className={linkClass}>
+                {c.name}
+              </NavLink>
+            ))}
+          <div className="relative group">
+            <button className="px-3 py-1.5 text-xs uppercase tracking-wide rounded-md transition-all duration-200 whitespace-nowrap h-[31px] flex items-center text-slate-600 hover:text-black hover:bg-slate-100">
+              Accessories
+              <svg className="ml-1 h-3 w-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </button>
+            <div className="absolute left-0 mt-1 hidden group-hover:block bg-white border border-slate-200 rounded-md shadow-lg py-1 min-w-[140px] z-50">
+              <NavLink to="/caps" className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Caps</NavLink>
+              <NavLink to="/watches" className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Watches</NavLink>
+              <NavLink to="/accessories" className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Accessories</NavLink>
+            </div>
+          </div>
+          <div className="relative group">
+            <button className="px-3 py-1.5 text-xs uppercase tracking-wide rounded-md transition-all duration-200 whitespace-nowrap h-[31px] flex items-center text-slate-600 hover:text-black hover:bg-slate-100">
+              About
+              <svg className="ml-1 h-3 w-3" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </button>
+            <div className="absolute left-0 mt-1 hidden group-hover:block bg-white border border-slate-200 rounded-md shadow-lg py-1 min-w-[160px] z-50">
+              <NavLink to="/about" className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">About</NavLink>
+              <NavLink to="/contact" className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Contact</NavLink>
+              <NavLink to="/blog" className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Blog</NavLink>
+              <NavLink to="/track" className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Track Order</NavLink>
+              <NavLink to="/returns" className="block px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Return & Exchange</NavLink>
+            </div>
+          </div>
           <NavLink to="/bulk-orders" className={linkClass}>
             Bulk Orders
-          </NavLink>
-          <NavLink to="/blog" className={linkClass}>
-            Blog
           </NavLink>
         </nav>
 
@@ -74,6 +100,16 @@ export default function Navbar() {
         </form>
 
         <div className="flex items-center gap-3 ml-3">
+          <Link to="/wishlist" className="relative text-slate-700 hover:text-gold" aria-label="Wishlist">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.2l7.8-7.7 1-1.1a5.5 5.5 0 0 0 0-7.8z" />
+            </svg>
+            {wishCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {wishCount}
+              </span>
+            )}
+          </Link>
           <Link to="/cart" className="relative text-slate-700 hover:text-gold" aria-label="Cart">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="9" cy="21" r="1" />
@@ -112,23 +148,34 @@ export default function Navbar() {
             />
           </form>
           <div className="flex flex-col gap-2">
-            {realCategories.map((c) => (
-              <NavLink key={c.name} to={c.to} className={linkClass} onClick={() => setOpen(false)}>
-                {c.name}
-              </NavLink>
-            ))}
-            <NavLink to="/about" className={linkClass} onClick={() => setOpen(false)}>
-              About
+            <NavLink to="/" end className={linkClass} onClick={() => setOpen(false)}>
+              Home Page
             </NavLink>
-            <NavLink to="/contact" className={linkClass} onClick={() => setOpen(false)}>
-              Contact
-            </NavLink>
+            {realCategories
+              .filter((c) => !['Caps', 'Watches', 'Accessories'].includes(c.name))
+              .map((c) => (
+                <NavLink key={c.name} to={c.to} className={linkClass} onClick={() => setOpen(false)}>
+                  {c.name}
+                </NavLink>
+              ))}
+            <div className="mt-1 border-t border-slate-100 pt-1">
+              <p className="px-2 py-1 text-[11px] uppercase tracking-widest text-slate-400">Accessories</p>
+              <NavLink to="/caps" className={linkClass} onClick={() => setOpen(false)}>Caps</NavLink>
+              <NavLink to="/watches" className={linkClass} onClick={() => setOpen(false)}>Watches</NavLink>
+              <NavLink to="/accessories" className={linkClass} onClick={() => setOpen(false)}>Accessories</NavLink>
+            </div>
             <NavLink to="/bulk-orders" className={linkClass} onClick={() => setOpen(false)}>
               Bulk Orders
             </NavLink>
-            <NavLink to="/blog" className={linkClass} onClick={() => setOpen(false)}>
-              Blog
-            </NavLink>
+            <div className="mt-1 border-t border-slate-100 pt-1">
+              <p className="px-2 py-1 text-[11px] uppercase tracking-widest text-slate-400">About</p>
+              <NavLink to="/about" className={linkClass} onClick={() => setOpen(false)}>About</NavLink>
+              <NavLink to="/contact" className={linkClass} onClick={() => setOpen(false)}>Contact</NavLink>
+              <NavLink to="/blog" className={linkClass} onClick={() => setOpen(false)}>Blog</NavLink>
+              <NavLink to="/track" className={linkClass} onClick={() => setOpen(false)}>Track Order</NavLink>
+              <NavLink to="/returns" className={linkClass} onClick={() => setOpen(false)}>Return & Exchange</NavLink>
+              <NavLink to="/wishlist" className={linkClass} onClick={() => setOpen(false)}>Wishlist</NavLink>
+            </div>
           </div>
         </div>
       )}

@@ -56,7 +56,7 @@ exports.getProduct = async (req, res) => {
 
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, price, sizes, category, inStock, stock, featured, rating, gender } = req.body;
+    const { name, description, price, sizes, category, inStock, stock, featured, rating, gender, salePrice, saleStart, saleEnd } = req.body;
     let parsedSizes = sizes;
     if (typeof sizes === 'string') {
       parsedSizes = sizes.split(',').map((s) => s.trim()).filter(Boolean);
@@ -75,11 +75,15 @@ exports.createProduct = async (req, res) => {
     }
 
     const stockNum = stock !== undefined ? Number(stock) : 0;
+    const saleNum = salePrice !== undefined && salePrice !== '' ? Number(salePrice) : 0;
 
     const product = new Product({
       name,
       description,
       price: Number(price),
+      salePrice: Number.isFinite(saleNum) && saleNum > 0 ? saleNum : 0,
+      saleStart: saleStart ? new Date(saleStart) : null,
+      saleEnd: saleEnd ? new Date(saleEnd) : null,
       sizes: parsedSizes && parsedSizes.length ? parsedSizes : ['S', 'M', 'L', 'XL'],
       category,
       image: imageUrl,
@@ -107,23 +111,30 @@ exports.updateProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    const { name, description, price, sizes, category, inStock, stock, featured, rating, gender } = req.body;
+    const { name, description, price, sizes, category, inStock, stock, featured, rating, gender, salePrice, saleStart, saleEnd } = req.body;
     if (name !== undefined) product.name = name;
     if (description !== undefined) product.description = description;
     if (price !== undefined) product.price = Number(price);
+    if (salePrice !== undefined) {
+      const s = salePrice === '' ? 0 : Number(salePrice);
+      product.salePrice = Number.isFinite(s) && s > 0 ? s : 0;
+    }
+    if (saleStart !== undefined) product.saleStart = saleStart ? new Date(saleStart) : null;
+    if (saleEnd !== undefined) product.saleEnd = saleEnd ? new Date(saleEnd) : null;
     if (category !== undefined) product.category = category;
     if (rating !== undefined) product.rating = Number(rating);
     if (gender !== undefined) product.gender = gender;
     if (stock !== undefined) {
-      product.stock = Number(stock);
-      product.inStock = product.stock > 0;
+      const s = Number(stock);
+      product.stock = Number.isFinite(s) && s >= 0 ? s : 0;
+      if (product.stock > 0) product.inStock = true;
     }
     if (sizes !== undefined) {
       let parsed = sizes;
       if (typeof sizes === 'string') parsed = sizes.split(',').map((s) => s.trim()).filter(Boolean);
       if (parsed.length) product.sizes = parsed;
     }
-    if (inStock !== undefined && stock === undefined) product.inStock = inStock === 'false' || inStock === false ? false : true;
+    if (inStock !== undefined) product.inStock = inStock === 'false' || inStock === false ? false : true;
     if (featured !== undefined) product.featured = featured === 'true' || featured === true;
     if (req.files && req.files.length > 0) {
       const uploads = await Promise.all(req.files.map((f) => uploadToCloudinary(f)));

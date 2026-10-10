@@ -1,4 +1,5 @@
 import { createSlice, createAction } from '@reduxjs/toolkit';
+import { pricing } from '../../lib/pricing';
 
 const cartSlice = createSlice({
   name: 'cart',
@@ -15,7 +16,7 @@ const cartSlice = createSlice({
         state.push({
           product,
           name: product.name || 'Product',
-          price: product.price || 0,
+          price: pricing(product).current,
           image: product.image || '',
           size,
           quantity,

@@ -42,6 +42,21 @@ export default function Orders() {
     }
   };
 
+  const printInvoice = (o) => {
+    const w = window.open('', '_blank', 'width=800,height=600');
+    if (!w) return;
+    const rows = o.items.map((i) => `<tr><td>${i.name}</td><td>${i.size}</td>${i.shoeSize ? `<td>US ${i.shoeSize}</td>` : '<td>—</td>'}<td>${i.quantity}</td><td>Rs ${Number(i.price || 0).toLocaleString()}</td></tr>`).join('');
+    w.document.write(`<!doctype html><html><head><title>Invoice ${o.reference}</title>
+      <style>body{font-family:Arial,sans-serif;padding:36px;color:#26211a}h1{color:#c9a24b;margin:0}table{width:100%;border-collapse:collapse;margin:20px 0}td,th{border:1px solid #ccc;padding:8px;text-align:left}th{background:#f7f5f0}.right{text-align:right}.muted{color:#888;font-size:12px}</style></head>
+      <body><h1>WEAR OUT</h1><p class="muted">Invoice / Order ${o.reference} — ${new Date(o.createdAt || Date.now()).toLocaleDateString()}</p>
+      <p><b>${o.customer.fullName}</b><br>${o.customer.address}, ${o.customer.city}<br>WhatsApp: ${o.customer.whatsapp}<br>${o.customer.email}</p>
+      <table><tr><th>Item</th><th>Size</th><th>Foot</th><th>Qty</th><th>Price</th></tr>${rows}</table>
+      <p class="right">Subtotal: Rs ${Number(o.totalAmount || 0).toLocaleString()}<br>Delivery: Rs ${Number(o.deliveryCharge || 0).toLocaleString()}<br><b>TOTAL: Rs ${Number((o.totalAmount || 0) + (o.deliveryCharge || 0)).toLocaleString()}</b></p>
+      <p>Status: ${o.status} · Courier: ${o.courier || '—'} · Payment: Cash on Delivery</p>
+      <script>window.onload = () => { window.print(); };</script></body></html>`);
+    w.document.close();
+  };
+
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3 mb-4">
@@ -115,6 +130,12 @@ export default function Orders() {
                     onClick={() => copy(o)}
                   >
                     {copied === o._id ? 'Copied!' : 'Copy'}
+                  </button>
+                  <button
+                    className="text-gold-dark hover:underline whitespace-nowrap block mt-1"
+                    onClick={() => printInvoice(o)}
+                  >
+                    Print
                   </button>
                 </td>
               </tr>

@@ -6,7 +6,15 @@ const clean = (str) => sanitizeHtml(str || '', { allowedTags: [], allowedAttribu
 
 exports.submitReview = async (req, res) => {
   try {
-    const { product, rating, comment, author, reference, email } = req.body;
+    const { product, rating, comment, author, reference, email, photos } = req.body;
+
+    // Photos: max 3, base64 data URLs only, each ≤ ~1.8MB
+    let photoList = [];
+    if (Array.isArray(photos)) {
+      photoList = photos
+        .filter((p) => typeof p === 'string' && p.startsWith('data:image/') && p.length < 1_900_000)
+        .slice(0, 3);
+    }
 
     // Optional purchase verification: if order reference given, verify it contains this product
     let verified = false;
@@ -29,6 +37,7 @@ exports.submitReview = async (req, res) => {
       author: clean(author) || 'Anonymous',
       status: 'Pending',
       verified,
+      photos: photoList,
     });
     await review.save();
     res.status(201).json({ message: 'Review submitted and awaiting approval', review });

@@ -16,6 +16,10 @@ import FAQ from './pages/FAQ';
 import Blog from './pages/Blog';
 import BlogDetail from './pages/BlogDetail';
 import NotFound from './pages/NotFound';
+import Wishlist from './pages/Wishlist';
+import Track from './pages/Track';
+import Returns from './pages/Returns';
+const HeroPage = lazy(() => import('./pages/Hero/HeroPage'));
 import { CartProvider } from './context/CartContext';
 import { AdminAuthProvider } from './context/AdminAuth';
 import { ConfigProvider } from './context/ConfigContext';
@@ -28,6 +32,7 @@ const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const Products = lazy(() => import('./pages/admin/Products'));
 const Orders = lazy(() => import('./pages/admin/Orders'));
 const BlogManager = lazy(() => import('./pages/admin/BlogManager'));
+const Coupons = lazy(() => import('./pages/admin/Coupons'));
 const Customers = lazy(() => import('./pages/admin/Customers'));
 const ReviewsModeration = lazy(() => import('./pages/admin/ReviewsModeration'));
 const Shopkeepers = lazy(() => import('./pages/admin/Shopkeepers'));
@@ -35,6 +40,7 @@ const FeaturedRequests = lazy(() => import('./pages/admin/FeaturedRequests'));
 const CourierHub = lazy(() => import('./pages/admin/CourierHub'));
 const Logistics = lazy(() => import('./pages/admin/Logistics'));
 const Analytics = lazy(() => import('./pages/admin/Analytics'));
+const Requests = lazy(() => import('./pages/admin/Requests'));
 const SellerLogin = lazy(() => import('./pages/seller/SellerLogin'));
 const SellerSignup = lazy(() => import('./pages/seller/SellerSignup'));
 const ShopkeeperLayout = lazy(() => import('./pages/seller/ShopkeeperLayout'));
@@ -61,7 +67,10 @@ export default function App() {
             <CartProvider>
               <Routes>
                 <Route element={<Layout />}>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<Suspended><HeroPage /></Suspended>} />
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/home-page" element={<Suspended><HeroPage /></Suspended>} />
+                  <Route path="/hero" element={<Suspended><HeroPage /></Suspended>} />
                   <Route path="/shirts" element={<Category />} />
                   <Route path="/trousers" element={<Category />} />
                   <Route path="/caps" element={<Category />} />
@@ -73,6 +82,9 @@ export default function App() {
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/track" element={<Track />} />
+                  <Route path="/returns" element={<Returns />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/bulk-orders" element={<BulkOrders />} />
@@ -95,6 +107,7 @@ export default function App() {
                     <Route index element={<Dashboard />} />
                     <Route path="products" element={<Products />} />
                     <Route path="orders" element={<Orders />} />
+                    <Route path="coupons" element={<Coupons />} />
                     <Route path="blog" element={<BlogManager />} />
                     <Route path="customers" element={<Suspense fallback={<AdminFallback />}><Customers /></Suspense>} />
                     <Route path="reviews" element={<Suspense fallback={<AdminFallback />}><ReviewsModeration /></Suspense>} />
@@ -103,6 +116,7 @@ export default function App() {
                     <Route path="courier" element={<Suspense fallback={<AdminFallback />}><CourierHub /></Suspense>} />
                     <Route path="logistics" element={<Suspense fallback={<AdminFallback />}><Logistics /></Suspense>} />
                     <Route path="analytics" element={<Suspense fallback={<AdminFallback />}><Analytics /></Suspense>} />
+                    <Route path="requests" element={<Suspense fallback={<AdminFallback />}><Requests /></Suspense>} />
                   </Route>
                 </Route>
                 <Route path="*" element={<NotFound />} />

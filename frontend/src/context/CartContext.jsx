@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api';
+import { pricing } from '../lib/pricing';
 
 const CartContext = createContext(null);
 
@@ -29,7 +30,7 @@ export function CartProvider({ children }) {
         {
           product: product._id,
           name: product.name,
-          price: product.price,
+          price: pricing(product).current,
           image: product.image,
           size,
           quantity,

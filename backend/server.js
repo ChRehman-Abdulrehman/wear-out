@@ -60,6 +60,12 @@ app.use('/api/seller', require('./routes/sellers'));
 app.use('/api/admin', require('./routes/adminShopkeepers'));
 app.use('/api/blog', require('./routes/blog'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/coupons', require('./routes/coupons'));
+app.use('/api/orders', require('./routes/track'));
+app.use('/api/notify', require('./routes/notify'));
+app.use('/api/returns', require('./routes/returns'));
+app.use('/api/newsletter', require('./routes/newsletter'));
+app.use('/api/settings', require('./routes/settings'));
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {

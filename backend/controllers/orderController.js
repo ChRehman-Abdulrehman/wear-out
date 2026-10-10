@@ -1,6 +1,10 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const Coupon = require('../models/Coupon');
+const Settings = require('../models/Settings');
 const { addOrderConfirmationJob } = require('../queues/orderQueue');
+const { pricing } = require('../utils/pricing');
+const { checkCoupon } = require('./couponController');
 
 const buildReference = () => 'WO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
 
@@ -15,7 +19,7 @@ async function generateUniqueReference(maxRetries = 5) {
 
 exports.createOrder = async (req, res) => {
   try {
-    const { customer, items, deliveryCharge } = req.body;
+    const { customer, items, deliveryCharge, couponCode } = req.body;
     if (!customer || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'Customer and at least one item are required' });
     }
@@ -50,20 +54,39 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: `Size ${it.size} not available for ${product.name}` });
       }
       const qty = Math.max(1, Math.min(100, parseInt(it.quantity, 10) || 1));
-      if (product.stock < qty) {
-        return res.status(400).json({ message: `Insufficient stock for ${product.name} (${product.stock} left)` });
+      if (product.inStock === false) {
+        return res.status(400).json({ message: `${product.name} is currently out of stock` });
       }
+      // Stock is only enforced when a positive count is tracked (0 = unlimited)
+      const tracked = Number(product.stock) > 0;
+      if (tracked && product.stock < qty) {
+        return res.status(400).json({ message: `Only ${product.stock} left in stock for ${product.name}` });
+      }
+      // Sale price wins when active — customers always pay the lower active price
+      const sell = pricing(product).current;
       resolvedItems.push({
         product: product._id,
         name: product.name,
-        price: product.price,
+        price: sell,
         size: it.size,
         quantity: qty,
         image: product.image,
         shoeSize: it.shoeSize || '',
+        tracked,
       });
-      total += product.price * qty;
+      total += sell * qty;
     }
+
+    // Coupon — validated server-side before any stock changes
+    let discount = 0;
+    let couponDoc = null;
+    if (couponCode && String(couponCode).trim()) {
+      const check = await checkCoupon(couponCode, total);
+      if (!check.ok) return res.status(400).json({ message: check.message });
+      discount = check.discount;
+      couponDoc = check.coupon;
+    }
+    const payable = Math.max(0, total - discount);
 
     // Aggregate duplicate items to prevent double-decrement bypass
     const aggregated = {};
@@ -77,9 +100,10 @@ exports.createOrder = async (req, res) => {
     }
     const aggItems = Object.values(aggregated);
 
-    // Atomic stock decrement for ALL items with rollback on failure
+    // Atomic stock decrement for tracked items only, with rollback on failure
     const decremented = [];
     for (const it of aggItems) {
+      if (!it.tracked) continue; // unlimited stock — nothing to decrement
       const updated = await Product.findOneAndUpdate(
         { _id: it.product, stock: { $gte: it.quantity } },
         { $inc: { stock: -it.quantity } },
@@ -93,7 +117,7 @@ exports.createOrder = async (req, res) => {
         return res.status(400).json({ message: `Insufficient stock for ${it.name}` });
       }
       decremented.push(it);
-      // Update inStock flag
+      // Update inStock flag — tracked product that reached 0 becomes unavailable
       if (updated.stock <= 0) {
         await Product.updateOne({ _id: it.product }, { $set: { inStock: false } });
       } else if (!updated.inStock) {
@@ -101,8 +125,16 @@ exports.createOrder = async (req, res) => {
       }
     }
 
-    // Server-side delivery charge (ignore client value)
-    const delivery = Number(process.env.DELIVERY_CHARGE) || 200;
+    // Server-side delivery charge — free shipping threshold is admin-controlled
+    let delivery = Number(process.env.DELIVERY_CHARGE) || 200;
+    try {
+      const cfgDelivery = await Settings.get('deliveryCharge', null);
+      if (cfgDelivery !== null && cfgDelivery !== undefined && Number.isFinite(Number(cfgDelivery))) {
+        delivery = Number(cfgDelivery);
+      }
+      const threshold = Number(await Settings.get('freeShippingThreshold', 0)) || 0;
+      if (threshold > 0 && payable >= threshold) delivery = 0;
+    } catch (e) { /* settings optional */ }
     const reference = await generateUniqueReference();
     const order = new Order({
       customer: {
@@ -114,8 +146,9 @@ exports.createOrder = async (req, res) => {
         email: customer.email,
         gender: customer.gender || 'Male',
       },
-      items: aggItems,
-      totalAmount: total,
+      items: aggItems.map(({ tracked, ...rest }) => rest),
+      totalAmount: payable,
+      coupon: { code: couponDoc ? couponDoc.code : '', discount },
       deliveryCharge: delivery,
       status: 'Order Placed',
       reference,
@@ -133,6 +166,10 @@ exports.createOrder = async (req, res) => {
 
     // Add order confirmation to background queue (graceful if Redis unavailable)
     try { await addOrderConfirmationJob(order._id); } catch (e) { /* queue optional */ }
+    // Count coupon usage only after a successful save
+    if (couponDoc) {
+      try { await Coupon.updateOne({ _id: couponDoc._id }, { $inc: { usedCount: 1 } }); } catch (e) { /* non-critical */ }
+    }
     res.status(201).json({ message: 'Order placed successfully', order });
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
