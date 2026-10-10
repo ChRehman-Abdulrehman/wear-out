@@ -18,7 +18,7 @@ const CATEGORY_KEYWORDS = {
 
 export default function Category() {
   const { pathname } = useLocation();
-  const slug = pathname.replace(/^\/+/, '');
+  const slug = pathname.replace(/^\/+/, '').replace(/\/+$/, '');
   const cat = categoryBySlug(slug);
   const label = cat ? cat.label : slug;
   const value = cat ? cat.value : slug;

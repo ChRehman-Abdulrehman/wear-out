@@ -13,6 +13,9 @@ export function CartProvider({ children }) {
     }
   });
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [lastAdded, setLastAdded] = useState(null);
+
   useEffect(() => {
     localStorage.setItem('wearout_cart', JSON.stringify(items));
   }, [items]);
@@ -38,6 +41,8 @@ export function CartProvider({ children }) {
         },
       ];
     });
+    setLastAdded({ product, size });
+    setDrawerOpen(true);
   };
 
   const updateQty = (product, size, quantity) => {
@@ -55,7 +60,21 @@ export function CartProvider({ children }) {
   const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addItem, updateQty, removeItem, clear, total, count: items.length }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addItem,
+        updateQty,
+        removeItem,
+        clear,
+        total,
+        count: items.length,
+        drawerOpen,
+        lastAdded,
+        openDrawer: () => setDrawerOpen(true),
+        closeDrawer: () => setDrawerOpen(false),
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
