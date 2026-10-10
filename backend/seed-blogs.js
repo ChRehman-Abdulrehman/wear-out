@@ -456,4 +456,8 @@ async function run() {
   await mongoose.disconnect();
   process.exit(0);
 }
-run().catch((e) => { console.error(e); process.exit(1); });
+module.exports = { blogs };
+
+if (require.main === module) {
+  run().catch((e) => { console.error(e); process.exit(1); });
+}
