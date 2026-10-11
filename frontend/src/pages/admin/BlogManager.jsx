@@ -60,6 +60,8 @@ export default function BlogManager() {
       const result = await api.adminUploadBlogImage(file);
       const markdown = `\n<img src="${result.url}" alt="blog image" className="w-full rounded-lg my-4" />\n`;
       insertAtCursor(markdown);
+      setForm((prev) => ({ ...prev, image: prev.image || result.url }));
+      setMsg('Image uploaded successfully');
     } catch (err) {
       setMsg('Image upload failed: ' + (err?.response?.data?.message || err.message));
     } finally {
