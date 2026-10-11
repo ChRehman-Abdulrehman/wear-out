@@ -26,7 +26,7 @@ const upload = multer({
 function uploadToCloudinary(file) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: 'wearout/products', transformation: [{ width: 800, height: 1000, crop: 'limit' }] },
+      { folder: 'wearout/blogs', transformation: [{ width: 1200, height: 630, crop: 'limit' }] },
       (error, result) => {
         if (error) return reject(error);
         resolve(result);
