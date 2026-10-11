@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useRecent } from '../lib/recent';
 import { pricing } from '../lib/pricing';
+import { imgUrl } from '../lib/img';
 
 // "Recently viewed" + "You may also like" strip for product pages
 export default function RelatedStrip({ currentId, category }) {
@@ -20,9 +21,9 @@ export default function RelatedStrip({ currentId, category }) {
               to={`/product/${p._id}`}
               className="group bg-white border border-gold/20 rounded-xl overflow-hidden hover:border-gold/60 transition-colors shadow-sm"
             >
-              <div className="relative aspect-[3/4] bg-slate-100 overflow-hidden">
+              <div className="relative aspect-[3/4] bg-white overflow-hidden">
                 {p.image ? (
-                  <img src={p.image} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+                  <img src={imgUrl(p.image)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-slate-300">No Image</div>
                 )}
